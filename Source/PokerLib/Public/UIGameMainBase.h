@@ -32,4 +32,8 @@ public:
 	//给玩家发牌
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnDealCards(APlayerStateCustom* PlayerState);
+
+	//更新牌数量
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnUpdateCardCount(APlayerStateCustom* PlayerState);
 };

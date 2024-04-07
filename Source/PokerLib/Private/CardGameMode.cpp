@@ -115,23 +115,6 @@ void ACardGameMode::InitializeCards(EDeckMode Mode)
 
 void ACardGameMode::DealCardsToPlayers()
 {
-	//for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	//{
-	//	APlayerController* PC = It->Get();
-	//	if (PC)
-	//	{
-	//		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PC->PlayerState);
-	//		if (PlayerState)
-	//		{
-	//			for (int32 i = 0; i < 10; ++i)
-	//			{
-	//				FCard Card = GameDeck->DealOneCard();
-	//				PlayerState->AddCardToHand(Card);
-	//			}
-	//		}
-	//	}
-	//}
-
 	ACardGameState* CardGameState = GetGameState<ACardGameState>();
 	if (CardGameState)
 	{

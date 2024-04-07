@@ -97,6 +97,24 @@ void ACardPlayerController::OnPlayerCardsReceived(APlayerStateCustom* NewPlayerS
 	GameMenuWidget->OnDealCards(NewPlayerState);
 }
 
+void ACardPlayerController::OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerStat)
+{
+if (!NewPlayerStat)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: NewPlayerState is NULL!"));
+		return;
+	}
+
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnUpdateCardCount(NewPlayerStat);
+
+}
+
 void ACardPlayerController::ClientCreateGameMenuUI_Implementation()
 {
 	if (IsLocalController())

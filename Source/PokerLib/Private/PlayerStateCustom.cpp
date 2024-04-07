@@ -19,8 +19,9 @@ void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
     DOREPLIFETIME(APlayerStateCustom, PlayerIndex);
     DOREPLIFETIME(APlayerStateCustom, PlayerCustomName);
-    DOREPLIFETIME(APlayerStateCustom, bIsReady);
-    DOREPLIFETIME(APlayerStateCustom, HandCards);
+    DOREPLIFETIME(APlayerStateCustom, bIsReady); 
+    DOREPLIFETIME(APlayerStateCustom, HandCardsCount);
+    DOREPLIFETIME_CONDITION(APlayerStateCustom, HandCards, COND_OwnerOnly);
 }
 
 void APlayerStateCustom::SetPlayerIndex(int32 Index)
@@ -41,7 +42,6 @@ void APlayerStateCustom::SetPlayerReady(bool value)
     if (GetLocalRole() == ROLE_Authority)
     {
         bIsReady = value;
-        
     }
 }
 
@@ -50,6 +50,31 @@ void APlayerStateCustom::AddCardToHand(const FCard& Card)
     if (GetLocalRole() == ROLE_Authority)
     {
         HandCards.Add(Card);
+        UpdateCardsCount();
+    }
+}
+
+void APlayerStateCustom::RemoveCardToHand(const FCard& Card)
+{
+    if (GetLocalRole() == ROLE_Authority)
+	{
+        for(int32 i = 0; i < HandCards.Num(); i++)
+		{
+			if (HandCards[i].Suit == Card.Suit && HandCards[i].Value == Card.Value)
+			{
+				HandCards.RemoveAt(i);
+				break;
+			}
+		}
+		UpdateCardsCount();
+	}
+}
+
+void APlayerStateCustom::UpdateCardsCount()
+{
+    if (GetLocalRole() == ROLE_Authority)
+    {
+        HandCardsCount = HandCards.Num();
     }
 }
 
@@ -98,6 +123,11 @@ void APlayerStateCustom::OnRep_HandCards()
     NotifyPlayerCardsToMainMenuBase();
 }
 
+void APlayerStateCustom::OnRep_HandCardsCount()
+{
+    NotifyPlayerCardsCountToMainMenuBase();
+}
+
 void APlayerStateCustom::NotifyPlayerJoinMainMenuBase()
 {
 	ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -132,4 +162,13 @@ void APlayerStateCustom::NotifyPlayerCardsToMainMenuBase()
 	{
 		PC->OnPlayerCardsReceived(this);
 	}
+}
+
+void APlayerStateCustom::NotifyPlayerCardsCountToMainMenuBase()
+{
+    ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    if (PC)
+    {
+        PC->OnUpdateCardCountReceived(this);
+    }
 }

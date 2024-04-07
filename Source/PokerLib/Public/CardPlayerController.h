@@ -32,6 +32,7 @@ public:
 	void OnPlayerInfoReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerReadyReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerCardsReceived(APlayerStateCustom* NewPlayerState);
+	void OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerStat);
 
 public:
 	UFUNCTION(Client, Reliable)

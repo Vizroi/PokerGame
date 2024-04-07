@@ -42,6 +42,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void AddCardToHand(const FCard& Card);
 
+    //Remove CardToHand
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void RemoveCardToHand(const FCard& Card);
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void UpdateCardsCount();
+
     // 通过PlayerIndex获取在当前屏幕的哪个座位
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
@@ -59,6 +66,9 @@ protected:
     UFUNCTION()
     void OnRep_HandCards();
 
+    UFUNCTION()
+    void OnRep_HandCardsCount();
+
 protected:
     UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "Player Status")
     int32 PlayerIndex = -1;
@@ -72,14 +82,16 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_HandCards, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
     TArray<FCard> HandCards;
 
+    //HandCardsCount
+    UPROPERTY(ReplicatedUsing = OnRep_HandCardsCount, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
+    int32 HandCardsCount;
+
 public:
     void NotifyPlayerJoinMainMenuBase();
     void NotifyPlayerInfoToMainMenuBase();
     void NotifyPlayerReadyToMainMenuBase();
     void NotifyPlayerCardsToMainMenuBase();
-
-
-
+    void NotifyPlayerCardsCountToMainMenuBase();
 
 
 
