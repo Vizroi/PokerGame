@@ -10,7 +10,7 @@ ACardPlayerController::ACardPlayerController()
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableTouchEvents = true;
-	DefaultMouseCursor = EMouseCursor::Crosshairs;
+	DefaultMouseCursor = EMouseCursor::Default;
 }
 
 void ACardPlayerController::JoinGame(const FString& ServerAddress)
@@ -26,6 +26,26 @@ void ACardPlayerController::ClientNotifyReady()
 	if (IsLocalController())
 	{
 		ServerSetPlayerReady();
+	}
+}
+
+void ACardPlayerController::SelectCard(FCard& Card)
+{
+	if (IsLocalController())
+	{
+		Card.bSelected = !Card.bSelected;
+
+		if (!GameMenuWidget)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+			return;
+		}
+
+		APlayerStateCustom* PlayerStateCustom = Cast<APlayerStateCustom>(PlayerState);
+		if (PlayerStateCustom) 
+		{
+			GameMenuWidget->OnSelectedCard(PlayerStateCustom, Card.CardID);
+		}
 	}
 }
 

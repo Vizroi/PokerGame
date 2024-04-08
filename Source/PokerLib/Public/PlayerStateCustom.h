@@ -33,10 +33,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Player Info")
 	FString GetCustomPlayerName() const { return PlayerCustomName; }
 
-    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    UFUNCTION(BlueprintCallable, Category = "Player Info")
     void SetPlayerReady(bool value);
 
-    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    UFUNCTION(BlueprintCallable, Category = "Player Info")
     bool GetPlayerReady() const { return bIsReady; }
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")
@@ -46,12 +46,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void RemoveCardToHand(const FCard& Card);
 
+    // 通过CardID来获取对应的卡牌
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    FCard GetCardByID(int32 CardID);
+
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void UpdateCardsCount();
 
     // 通过PlayerIndex获取在当前屏幕的哪个座位
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
+
 
 protected:
     UFUNCTION()

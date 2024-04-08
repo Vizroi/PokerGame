@@ -7,6 +7,7 @@
 
 ACardGameMode::ACardGameMode()
 {
+	DefaultPawnClass = NULL;
 	PlayerStateClass = APlayerStateCustom::StaticClass();
 	PlayerControllerClass = ACardPlayerController::StaticClass();
 	GameStateClass = ACardGameState::StaticClass();

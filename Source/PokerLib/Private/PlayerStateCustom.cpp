@@ -70,6 +70,19 @@ void APlayerStateCustom::RemoveCardToHand(const FCard& Card)
 	}
 }
 
+FCard APlayerStateCustom::GetCardByID(int32 CardID)
+{
+    FCard EmptyCard;
+    for(FCard& Card : HandCards)
+	{
+		if (Card.CardID == CardID)
+		{
+            return Card;
+		}
+	}
+    return EmptyCard;
+}
+
 void APlayerStateCustom::UpdateCardsCount()
 {
     if (GetLocalRole() == ROLE_Authority)
@@ -85,14 +98,6 @@ int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
     if (PlayerState)
     {
         int32 CurrentPlayerIndex = PlayerState->PlayerIndex;
-        //if (CurrentPlayerIndex - Index < 0)
-        //{
-        //    SeatIndex = CurrentPlayerIndex - Index + 4;
-        //}
-        //else 
-        //{
-        //    SeatIndex = CurrentPlayerIndex - Index;
-        //}
         SeatIndex = (CurrentPlayerIndex - Index + 4) % 4;
     }
     if (SeatIndex < 0)

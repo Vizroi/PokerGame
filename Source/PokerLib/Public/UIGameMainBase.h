@@ -36,4 +36,8 @@ public:
 	//更新牌数量
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnUpdateCardCount(APlayerStateCustom* PlayerState);
+
+	//选中卡牌
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnSelectedCard(APlayerStateCustom* PlayerState, int32 CardId);
 };

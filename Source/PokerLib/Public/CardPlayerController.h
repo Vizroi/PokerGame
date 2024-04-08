@@ -20,13 +20,16 @@ class POKERLIB_API ACardPlayerController : public APlayerController
 public:
 	ACardPlayerController();
 public:
-	// 调用服务器 加入游戏
 	UFUNCTION(BlueprintCallable, Category = "Game|RedTen")
 	void JoinGame(const FString& ServerAddress);
 
-	// 调用服务器 准备游戏
 	UFUNCTION(BlueprintCallable, Category = "Game|RedTen")
 	void ClientNotifyReady();
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Game|Action")
+	void SelectCard(FCard& Card);
+
 public:
 	void OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState);
 	void OnPlayerInfoReceived(APlayerStateCustom* NewPlayerState);

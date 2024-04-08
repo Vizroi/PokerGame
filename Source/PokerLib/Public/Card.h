@@ -60,15 +60,21 @@ struct FCard
 {
 	GENERATED_BODY()
 
-	FCard() : Suit(ESuit::Spade), Value(ECardValue::None) {}
+	FCard() : CardID(-1), Suit(ESuit::Spade), Value(ECardValue::None), bSelected(false){}
 
-	FCard(ESuit InSuit, ECardValue Invalue) : Suit(InSuit), Value(Invalue) {}
+	FCard(int32 InCardID, ESuit InSuit, ECardValue Invalue) : CardID(InCardID), Suit(InSuit), Value(Invalue) {}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
+	int32 CardID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
 	ESuit Suit;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
 	ECardValue Value;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
+	bool bSelected;
 };
 
 

@@ -7,23 +7,26 @@ void StandardDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
 {
     Cards.Empty();
 
+    int32 CardID = 0;
     for (int32 SuitInt = 0; SuitInt < static_cast<int32>(ESuit::Joker); ++SuitInt)
     {
         for (int32 Value = static_cast<int32>(ECardValue::Ace); Value <= static_cast<int32>(ECardValue::K); ++Value)
         {
-            Cards.Add(FCard(static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID,static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            ++CardID;
         }
     }
 
     // 添加两张王
-    Cards.Add(FCard(ESuit::Joker, ECardValue::JokerA));
-    Cards.Add(FCard(ESuit::Joker, ECardValue::JokerB));
+    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA));
+    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB));
 }
 
 void RedTenDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
 {
     Cards.Empty(); // 清空现有卡组
 
+    int32 CardID = 0;
     // 添加四种花色的A到K
     for (int32 Suit = 0; Suit < 4; ++Suit)
     {
@@ -36,24 +39,27 @@ void RedTenDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
                 continue;
             }
 
-            Cards.Add(FCard(static_cast<ESuit>(Suit), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID, static_cast<ESuit>(Suit), static_cast<ECardValue>(Value)));
+            ++CardID;
         }
     }
 
     // 添加大小王
-    Cards.Add(FCard(ESuit::Joker, ECardValue::JokerA));
-    Cards.Add(FCard(ESuit::Joker, ECardValue::JokerB));
+    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA));
+    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB));
 }
 
 void TexasHoldemDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
 {
     Cards.Empty();
 
+    int32 CardID = 0;
     for (int32 SuitInt = 0; SuitInt < static_cast<int32>(ESuit::Joker); ++SuitInt)
     {
         for (int32 Value = static_cast<int32>(ECardValue::Ace); Value <= static_cast<int32>(ECardValue::K); ++Value)
         {
-            Cards.Add(FCard(static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID, static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            ++CardID;
         }
     }
 }
