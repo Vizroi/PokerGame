@@ -8,7 +8,7 @@
 #include "UIGameMainBase.generated.h"
 
 /**
- * 
+ * 游戏游玩主要界面
  */
 UCLASS()
 class POKERLIB_API UUIGameMainBase : public UUserWidget
@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnUpdateCardCount(APlayerStateCustom* PlayerState);
 
-	//选中卡牌
+	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
-		void OnSelectedCard(APlayerStateCustom* PlayerState, int32 CardId);
+		void OnSelectCard();
 };

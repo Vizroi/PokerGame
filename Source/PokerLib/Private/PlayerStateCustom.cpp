@@ -70,6 +70,63 @@ void APlayerStateCustom::RemoveCardToHand(const FCard& Card)
 	}
 }
 
+void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
+{
+    if (GetLocalRole() == ROLE_Authority)
+	{
+		for(int32 i = 0; i < CardId.Num(); i++)
+		{
+			for(int32 j = 0; j < HandCards.Num(); j++)
+			{
+				if (HandCards[j].CardID == CardId[i])
+				{
+					HandCards.RemoveAt(j);
+					break;
+				}
+			}
+		}
+		UpdateCardsCount();
+	}
+}
+
+bool APlayerStateCustom::SelectCardToHand(int32 CardId)
+{
+    bool IsSelected = false;
+    for (FCard& Card : HandCards)
+    {
+        if (Card.CardID == CardId)
+        {
+            Card.bSelected = !Card.bSelected;
+            IsSelected = Card.bSelected;
+            break;
+        }
+    }
+    return IsSelected;
+}
+
+TArray<int32> APlayerStateCustom::GetAllCardID()
+{
+    TArray<int32> CardIDArray;
+    for (FCard& Card : HandCards)
+	{
+		CardIDArray.Add(Card.CardID);
+	}
+    return CardIDArray;
+}
+
+TArray<int32> APlayerStateCustom::GetAllSelectedCardID()
+{
+    TArray<int32> CardIDArray;
+	for (FCard& Card : HandCards)
+	{
+		if (Card.bSelected)
+		{
+			CardIDArray.Add(Card.CardID);
+		}
+	}
+	return CardIDArray;
+}
+
 FCard APlayerStateCustom::GetCardByID(int32 CardID)
 {
     FCard EmptyCard;

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-//#include "GameFramework/Actor.h"
 #include "Card.generated.h"
 
 // 定义扑克牌的花色枚举
@@ -62,7 +61,7 @@ struct FCard
 
 	FCard() : CardID(-1), Suit(ESuit::Spade), Value(ECardValue::None), bSelected(false){}
 
-	FCard(int32 InCardID, ESuit InSuit, ECardValue Invalue) : CardID(InCardID), Suit(InSuit), Value(Invalue) {}
+	FCard(int32 InCardID, ESuit InSuit, ECardValue Invalue, bool InSelected) : CardID(InCardID), Suit(InSuit), Value(Invalue), bSelected(InSelected) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
 	int32 CardID;
@@ -74,7 +73,7 @@ struct FCard
 	ECardValue Value;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
-	bool bSelected;
+	bool bSelected = false;
 };
 
 

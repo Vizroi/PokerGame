@@ -4,6 +4,7 @@
 #include "CardPlayerController.h"
 #include "PlayerStateCustom.h"
 #include "CardGameMode.h"
+#include "RedTenCardFunctionLibrary.h"
 
 ACardPlayerController::ACardPlayerController()
 {
@@ -11,6 +12,7 @@ ACardPlayerController::ACardPlayerController()
 	bEnableClickEvents = true;
 	bEnableTouchEvents = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+	LastCards.Empty();
 }
 
 void ACardPlayerController::JoinGame(const FString& ServerAddress)
@@ -29,22 +31,127 @@ void ACardPlayerController::ClientNotifyReady()
 	}
 }
 
-void ACardPlayerController::SelectCard(FCard& Card)
+void ACardPlayerController::ClientCreateGameMenuUI_Implementation()
 {
 	if (IsLocalController())
 	{
-		Card.bSelected = !Card.bSelected;
-
-		if (!GameMenuWidget)
+		// 创建游戏菜单
+		if (GameMenuWidgetClass)
 		{
-			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
-			return;
+			if (!GameMenuWidget)
+			{
+				GameMenuWidget = CreateWidget<UUIGameMainBase>(this, GameMenuWidgetClass);
+				if (GameMenuWidget)
+				{
+					GameMenuWidget->AddToViewport();
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ACardPlayerController::CreateGameMenuWidget: GameMenuWidget is already created!"));
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::BeginPlay: Not a local controller!"));
+	}
+}
+
+TArray<FCard> ACardPlayerController::GetCardsByID(const TArray<int32>& CardId)
+{
+	TArray<FCard> Cards;
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (PS)
+	{
+		for (int32 Id : CardId)
+		{
+			FCard Card = PS->GetCardByID(Id);
+			Cards.Add(Card);
 		}
 
-		APlayerStateCustom* PlayerStateCustom = Cast<APlayerStateCustom>(PlayerState);
-		if (PlayerStateCustom) 
+	}
+	return Cards;
+}
+
+bool ACardPlayerController::IsCardInHand(int32 CardId)
+{
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (PS)
+	{
+		FCard Card = PS->GetCardByID(CardId);
+		return Card.Value != ECardValue::None;
+	}
+	return false;
+}
+
+bool ACardPlayerController::IsCanPlayCardsInHand()
+{
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: PlayerState is NULL!"));
+	}
+
+	TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
+
+	if (CheckPlayCards(CardsIdArray))
+	{
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: Can't play the cards!"));
+		return false;
+	}
+}
+
+bool ACardPlayerController::CheckPlayCards(const TArray<int32>& CardId)
+{
+	TArray<FCard> CurCards = GetCardsByID(CardId);
+	bool IsCanPlayCard = URedTenCardFunctionLibrary::CanPlayCard(CurCards, LastCards);
+
+	return IsCanPlayCard;
+}
+
+bool ACardPlayerController::SelectCard(int32 CardId)
+{
+	if (IsLocalController())
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+		if (PS != NULL)
 		{
-			GameMenuWidget->OnSelectedCard(PlayerStateCustom, Card.CardID);
+			bool IsSelected = PS->SelectCardToHand(CardId);
+			if (GameMenuWidget)
+			{
+				GameMenuWidget->OnSelectCard();
+			}
+
+			return IsSelected;
+		}
+	}
+	return false;
+}
+
+void ACardPlayerController::ClientPlayCards()
+{
+	if (IsLocalController())
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+		if (!PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::PlayCards: PlayerState is NULL!"));
+		}
+
+		TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
+
+		if (CheckPlayCards(CardsIdArray))
+		{
+			ServerPlayCards(CardsIdArray);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::PlayCards: Can't play the cards!"));
 		}
 	}
 }
@@ -135,33 +242,6 @@ if (!NewPlayerStat)
 
 }
 
-void ACardPlayerController::ClientCreateGameMenuUI_Implementation()
-{
-	if (IsLocalController())
-	{
-		// 创建游戏菜单
-		if (GameMenuWidgetClass)
-		{
-			if (!GameMenuWidget)
-			{
-				GameMenuWidget = CreateWidget<UUIGameMainBase>(this, GameMenuWidgetClass);
-				if (GameMenuWidget)
-				{
-					GameMenuWidget->AddToViewport();
-				}
-			}
-			else 
-			{
-				UE_LOG(LogTemp, Warning, TEXT("ACardPlayerController::CreateGameMenuWidget: GameMenuWidget is already created!"));
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::BeginPlay: Not a local controller!"));
-	}
-}
-
 void ACardPlayerController::ServerSetPlayerReady_Implementation()
 {
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
@@ -188,5 +268,33 @@ bool ACardPlayerController::ServerSetPlayerReady_Validate()
 {
 	// 在这里可以添加一些额外的验证逻辑
 	// 例如，防止玩家在某些游戏状态下更改准备状态
+	return true;
+}
+
+void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& CardsId)
+{
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPlayCards: PlayerState is NULL!"));
+		return;
+	}
+
+	if (!CheckPlayCards(CardsId))
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPlayCards: Can't Try Play Cards"));
+		return;
+	}
+	else
+	{
+		LastCards.Empty();
+		LastCards = GetCardsByID(CardsId);
+
+		PS->RemoveCardToHandFormCardId(CardsId);
+	}
+}
+
+bool ACardPlayerController::ServerPlayCards_Validate(const TArray<int32>& CardsId)
+{
 	return true;
 }

@@ -8,7 +8,6 @@
 #include "UObject/NoExportTypes.h"
 #include "Deck.generated.h"
 
-
 UENUM(BlueprintType)
 enum class EDeckMode : uint8
 {

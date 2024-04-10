@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UIGameMainBase.h"
+#include "CardSet.cpp"
 #include "GameFramework/PlayerController.h"
 #include "CardPlayerController.generated.h"
 
@@ -26,9 +27,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|RedTen")
 	void ClientNotifyReady();
 
+	UFUNCTION(Client, Reliable)
+	void ClientCreateGameMenuUI();
+
 public:
-	UFUNCTION(BlueprintCallable, Category = "Game|Action")
-	void SelectCard(FCard& Card);
+	//根据卡牌ID获取卡牌
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
+	TArray<FCard> GetCardsByID(const TArray<int32>& CardId);
+
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
+	bool IsCardInHand(int32 CardId);
+
+	//根据手里的牌判断是否可以出牌
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
+	bool IsCanPlayCardsInHand();
+
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
+	bool CheckPlayCards(const TArray<int32>& CardId);
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
+	bool SelectCard(int32 CardId);
+
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
+	void ClientPlayCards();
 
 public:
 	void OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState);
@@ -37,18 +59,21 @@ public:
 	void OnPlayerCardsReceived(APlayerStateCustom* NewPlayerState);
 	void OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerStat);
 
-public:
-	UFUNCTION(Client, Reliable)
-	void ClientCreateGameMenuUI();
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetPlayerReady();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPlayCards(const TArray<int32>& CardsId);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI_GamePlayMenu")
 	TSubclassOf<UUIGameMainBase> GameMenuWidgetClass;
 
-protected:
+private:
 	UPROPERTY()
 	UUIGameMainBase* GameMenuWidget;
+
+	UPROPERTY()
+	TArray<FCard> LastCards;
 };

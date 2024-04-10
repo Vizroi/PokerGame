@@ -40,7 +40,6 @@ void UDeck::InitializeDeck(EDeckMode Mode)
     ShuffleDeck();
 }
 
-
 void UDeck::ShuffleDeck()
 {
     const int32 LastIndex = Cards.Num() - 1;

@@ -12,14 +12,14 @@ void StandardDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
     {
         for (int32 Value = static_cast<int32>(ECardValue::Ace); Value <= static_cast<int32>(ECardValue::K); ++Value)
         {
-            Cards.Add(FCard(CardID,static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID,static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value), false));
             ++CardID;
         }
     }
 
     // 添加两张王
-    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA));
-    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB));
+    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA, false));
+    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB, false));
 }
 
 void RedTenDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
@@ -39,14 +39,14 @@ void RedTenDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
                 continue;
             }
 
-            Cards.Add(FCard(CardID, static_cast<ESuit>(Suit), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID, static_cast<ESuit>(Suit), static_cast<ECardValue>(Value), false));
             ++CardID;
         }
     }
 
     // 添加大小王
-    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA));
-    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB));
+    Cards.Add(FCard(CardID, ESuit::Joker, ECardValue::JokerA, false));
+    Cards.Add(FCard(CardID + 1, ESuit::Joker, ECardValue::JokerB, false));
 }
 
 void TexasHoldemDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
@@ -58,7 +58,7 @@ void TexasHoldemDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
     {
         for (int32 Value = static_cast<int32>(ECardValue::Ace); Value <= static_cast<int32>(ECardValue::K); ++Value)
         {
-            Cards.Add(FCard(CardID, static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value)));
+            Cards.Add(FCard(CardID, static_cast<ESuit>(SuitInt), static_cast<ECardValue>(Value), false));
             ++CardID;
         }
     }

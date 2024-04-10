@@ -46,7 +46,19 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void RemoveCardToHand(const FCard& Card);
 
-    // 通过CardID来获取对应的卡牌
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void RemoveCardToHandFormCardId(const TArray<int32>& CardId);
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    bool SelectCardToHand(int32 CardId);
+
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    TArray<int32> GetAllCardID();
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    TArray<int32> GetAllSelectedCardID();
+
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     FCard GetCardByID(int32 CardID);
 
