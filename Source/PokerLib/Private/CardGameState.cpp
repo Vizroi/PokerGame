@@ -14,6 +14,7 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACardGameState, PlayerStateArray);
+	DOREPLIFETIME_CONDITION(ACardGameState, TeamRedTen, COND_OwnerOnly);
 }
 
 APlayerStateCustom* ACardGameState::GetPlayerStateByIndex(int32 index)
@@ -84,6 +85,30 @@ void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 	}
 }
 
+void ACardGameState::AssignTeam()
+{
+	//检测只有在服务器端才能执行
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PS)
+		{
+			PS->AssignTeamID();
+		}
+	}
+
+}
+
+void ACardGameState::RevealIdentiy(APlayerStateCustom* PSC)
+{
+	
+}
+
 void ACardGameState::OnRep_PlayerStateArrayChange()
 {
 	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
@@ -98,4 +123,10 @@ void ACardGameState::OnRep_PlayerStateArrayChange()
 	//输出日志,当前是谁的CardGameState,并且有多少个PlayerState,以及每个PlayerState的名字
 	UE_LOG(LogTemp, Warning, TEXT("CardGameState: %s, PlayerStateArray.Num(): %d"), *GetName(), PlayerStateArray.Num());
 
+}
+
+void ACardGameState::OnRep_AssignTeam()
+{
+	//输出日志,分配好的队伍型是怎样
+	UE_LOG(LogTemp, Warning, TEXT("TeamRedTen.Num(): %d"), TeamRedTen.Num());
 }

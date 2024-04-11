@@ -7,6 +7,16 @@
 #include "GameFramework/PlayerState.h"
 #include "PlayerStateCustom.generated.h"
 
+//队伍两种，一种是有红10，一种是没有的
+UENUM(BlueprintType)
+enum class ETeamID : uint8
+{
+    InValid UMETA(DisplayName = "InValid"),
+	RedTen UMETA(DisplayName = "RedTen"),
+	NoRedTen UMETA(DisplayName = "NoRedTen")
+};
+
+
 UCLASS()
 class POKERLIB_API APlayerStateCustom : public APlayerState
 {   
@@ -72,6 +82,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
 
+    // 手里是否拥有红桃10
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void HasReadTen(bool& HasHeartTen, bool& HasDiamondTen);
+
+    // 分配队伍
+    UFUNCTION(BlueprintCallable, Category = "Team Info")
+
+
+public:
     //输出当前手里的卡牌信息
     UFUNCTION(BlueprintCallable, Category = "Card Info")
     void PrintHandsCardsInfo(FString Text);
@@ -139,6 +158,6 @@ public:
 
     // 玩家所属的队伍
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
-    int32 TeamID;
+    ETeamID TeamID;
 };
 

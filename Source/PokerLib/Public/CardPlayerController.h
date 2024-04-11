@@ -56,6 +56,9 @@ public:
 	void ClientPlayCards();
 
 public:
+
+
+public:
 	void OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState);
 	void OnPlayerInfoReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerReadyReceived(APlayerStateCustom* NewPlayerState);

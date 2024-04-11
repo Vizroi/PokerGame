@@ -307,7 +307,6 @@ void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& 
 		LastCards = GetCardsByID(CardsId);
 
 		PS->PrintHandsCardsInfo("ServerPlayCards: ");
-		PS->PrintHandsCardsInfo("ClientPlayCards: ");
 		PS->RemoveCardToHandFormCardId(CardsId);
 	}
 }

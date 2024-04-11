@@ -8,10 +8,16 @@
 #include "RedTenCardFunctionLibrary.h"
 
 APlayerStateCustom::APlayerStateCustom()
-	:BetScore(0),
-	TeamID(-1)
 {
 	bReplicates = true;
+    PlayerIndex = -1;
+    PlayerCustomName = FString(TEXT("None"));
+    bIsReady = false;
+    HandCards.Empty();
+    HandCardsCount = 0;
+
+    BetScore = 0;
+    TeamID = ETeamID::InValid;
 }
 
 void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,6 +28,8 @@ void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(APlayerStateCustom, PlayerCustomName);
     DOREPLIFETIME(APlayerStateCustom, bIsReady); 
     DOREPLIFETIME(APlayerStateCustom, HandCardsCount);
+    DOREPLIFETIME(APlayerStateCustom, TeamID);
+    DOREPLIFETIME(APlayerStateCustom, BetScore);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, HandCards, COND_OwnerOnly);
 }
 
@@ -75,6 +83,8 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 {
     if (GetLocalRole() == ROLE_Authority)
 	{
+        PrintHandsCardsInfo("Before RemoveCardToHandFromCardId: ");
+
 		for(int32 i = 0; i < CardId.Num(); i++)
 		{
 			for(int32 j = 0; j < HandCards.Num(); j++)
@@ -89,20 +99,13 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 		}
 		UpdateCardsCount();
 
-        PrintHandsCardsInfo("RemoveCardToHandFromCardId: ");
+        PrintHandsCardsInfo("After RemoveCardToHandFromCardId: ");
 	}
 }
 
 void APlayerStateCustom::SortHandCards()
 {
     URedTenCardFunctionLibrary::SortCards(HandCards);
-    /*if (HandCards.Num() > 1)
-    {
-        HandCards.Sort([](const FCard& A, const FCard& B)
-            {
-                return URedTenCardFunctionLibrary::GetCardPriority(A) < URedTenCardFunctionLibrary::GetCardPriority(B);
-            });
-    }*/
 }
 
 bool APlayerStateCustom::SelectCardToHand(int32 CardId)
@@ -179,6 +182,41 @@ int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
     }
 
     return SeatIndex;
+}
+
+void APlayerStateCustom::HasReadTen(bool& HasHeartTen, bool& HasDiamondTen)
+{
+    HasHeartTen = false;
+	HasDiamondTen = false;
+    for (FCard& Card : HandCards)
+    {
+        if (Card.Value == ECardValue::Ten)
+        {
+            if (Card.Suit == ESuit::Heart)
+            {
+				HasHeartTen = true;
+			}
+            else if (Card.Suit == ESuit::Diamond)
+            {
+				HasDiamondTen = true;
+			}
+		}
+	}
+}
+
+void APlayerStateCustom::AssignTeamID()
+{
+    bool isHaveHeartTen = false;
+	bool isHaveDiamondTen = false;
+	HasReadTen(isHaveHeartTen, isHaveDiamondTen);
+    if (isHaveHeartTen && isHaveDiamondTen)
+    {
+		TeamID = ETeamID::RedTen;
+	}
+    else
+    {
+		TeamID = ETeamID::NoRedTen;
+	}
 }
 
 void APlayerStateCustom::PrintHandsCardsInfo(FString Text)

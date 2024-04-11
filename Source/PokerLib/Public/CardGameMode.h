@@ -30,6 +30,9 @@ public:
     void InitializeCards(EDeckMode Mode);
     void DealCardsToPlayers();
 
+    //AssignTeams
+    void AssignTeams();
+
 protected:
     UPROPERTY()
     UDeck* GameDeck = nullptr;

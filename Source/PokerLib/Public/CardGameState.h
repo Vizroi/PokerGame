@@ -35,6 +35,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
 	void DealCardToPlayer(UDeck* CardDeck);
 
+	UFUNCTION(BlueprintCallable, Category = "Team Action")
+	void AssignTeam();
+
+	UFUNCTION(BlueprintCallable, Category = "Team Action")
+	void RevealIdentiy(APlayerStateCustom* PSC);
+
 public:
 	//通过位运算的变量来知道当前哪个位置是空的
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CardGameState PlayerIndex")
@@ -44,7 +50,13 @@ public:
 	UFUNCTION()
 	void OnRep_PlayerStateArrayChange();
 
+	UFUNCTION()
+	void OnRep_AssignTeam();
+
 protected:
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange, VisibleAnywhere, BlueprintReadOnly, Category = "Player Status")
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange, Category = "Player Status")
 	TArray<APlayerStateCustom*> PlayerStateArray;
+
+	UPROPERTY(ReplicatedUsing = OnRep_AssignTeam, Category = "Player Team")
+	TArray<APlayerStateCustom*> TeamRedTen;
 };

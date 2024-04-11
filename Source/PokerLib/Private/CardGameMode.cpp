@@ -98,6 +98,7 @@ void ACardGameMode::StartGame()
 		// Default RedTen
 		InitializeCards(EDeckMode::RedTen);
 		DealCardsToPlayers();
+		AssignTeams();
 	}
 }
 
@@ -120,5 +121,14 @@ void ACardGameMode::DealCardsToPlayers()
 	if (CardGameState)
 	{
 		CardGameState->DealCardToPlayer(GameDeck);
+	}
+}
+
+void ACardGameMode::AssignTeams()
+{
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (CardGameState)
+	{
+		CardGameState->AssignTeam();
 	}
 }
