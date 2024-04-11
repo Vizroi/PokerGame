@@ -54,9 +54,9 @@ public:
 	void OnRep_AssignTeam();
 
 protected:
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange, Category = "Player Status")
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange)
 	TArray<APlayerStateCustom*> PlayerStateArray;
 
-	UPROPERTY(ReplicatedUsing = OnRep_AssignTeam, Category = "Player Team")
+	UPROPERTY(ReplicatedUsing = OnRep_AssignTeam)
 	TArray<APlayerStateCustom*> TeamRedTen;
 };

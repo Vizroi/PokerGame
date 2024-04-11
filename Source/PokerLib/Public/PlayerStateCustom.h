@@ -88,6 +88,7 @@ public:
 
     // 分配队伍
     UFUNCTION(BlueprintCallable, Category = "Team Info")
+    void AssignTeamID();
 
 
 public:
