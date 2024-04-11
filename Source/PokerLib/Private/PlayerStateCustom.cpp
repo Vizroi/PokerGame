@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CardPlayerController.h"
 #include <Kismet/GameplayStatics.h>
+#include "RedTenCardFunctionLibrary.h"
 
 APlayerStateCustom::APlayerStateCustom()
 	:BetScore(0),
@@ -63,7 +64,7 @@ void APlayerStateCustom::RemoveCardToHand(const FCard& Card)
 			if (HandCards[i].Suit == Card.Suit && HandCards[i].Value == Card.Value)
 			{
 				HandCards.RemoveAt(i);
-				break;
+                break;
 			}
 		}
 		UpdateCardsCount();
@@ -81,12 +82,27 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 				if (HandCards[j].CardID == CardId[i])
 				{
 					HandCards.RemoveAt(j);
+                    j--;
 					break;
 				}
 			}
 		}
 		UpdateCardsCount();
+
+        PrintHandsCardsInfo("RemoveCardToHandFromCardId: ");
 	}
+}
+
+void APlayerStateCustom::SortHandCards()
+{
+    URedTenCardFunctionLibrary::SortCards(HandCards);
+    /*if (HandCards.Num() > 1)
+    {
+        HandCards.Sort([](const FCard& A, const FCard& B)
+            {
+                return URedTenCardFunctionLibrary::GetCardPriority(A) < URedTenCardFunctionLibrary::GetCardPriority(B);
+            });
+    }*/
 }
 
 bool APlayerStateCustom::SelectCardToHand(int32 CardId)
@@ -163,6 +179,27 @@ int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
     }
 
     return SeatIndex;
+}
+
+void APlayerStateCustom::PrintHandsCardsInfo(FString Text)
+{
+    UE_LOG(LogTemp, Warning, TEXT("HandsCardsInfo --- %s"), *Text);
+    for (auto Elem : HandCards)
+    {
+        URedTenCardFunctionLibrary::PrintCardInfo(Elem);
+    }
+}
+
+void APlayerStateCustom::PrintSelectedCardsInfo(FString Text)
+{
+    UE_LOG(LogTemp, Warning, TEXT("SelectedCardsInfo --- %s"), *Text);
+    for (auto Elem : HandCards)
+    {
+        if (Elem.bSelected)
+        {
+			URedTenCardFunctionLibrary::PrintCardInfo(Elem);
+		}
+	}
 }
 
 void APlayerStateCustom::OnRep_PlayerIndex()

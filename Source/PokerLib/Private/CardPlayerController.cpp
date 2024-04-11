@@ -114,6 +114,19 @@ bool ACardPlayerController::CheckPlayCards(const TArray<int32>& CardId)
 	return IsCanPlayCard;
 }
 
+
+void ACardPlayerController::SortHandCards()
+{
+	if (IsLocalController())
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+		if (PS != NULL)
+		{
+			PS->SortHandCards();
+		}
+	}
+}
+
 bool ACardPlayerController::SelectCard(int32 CardId)
 {
 	if (IsLocalController())
@@ -148,6 +161,9 @@ void ACardPlayerController::ClientPlayCards()
 		if (CheckPlayCards(CardsIdArray))
 		{
 			ServerPlayCards(CardsIdArray);
+
+			PS->PrintHandsCardsInfo("ClientPlayCards: ");
+			PS->PrintSelectedCardsInfo("ClientPlayCards: ");
 		}
 		else
 		{
@@ -290,6 +306,8 @@ void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& 
 		LastCards.Empty();
 		LastCards = GetCardsByID(CardsId);
 
+		PS->PrintHandsCardsInfo("ServerPlayCards: ");
+		PS->PrintHandsCardsInfo("ClientPlayCards: ");
 		PS->RemoveCardToHandFormCardId(CardsId);
 	}
 }

@@ -49,9 +49,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void RemoveCardToHandFormCardId(const TArray<int32>& CardId);
 
+    //sort hand cads
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void SortHandCards();
+
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     bool SelectCardToHand(int32 CardId);
-
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     TArray<int32> GetAllCardID();
@@ -69,6 +72,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
 
+    //输出当前手里的卡牌信息
+    UFUNCTION(BlueprintCallable, Category = "Card Info")
+    void PrintHandsCardsInfo(FString Text);
+
+    //输出当前手里被选中的卡牌信息
+    UFUNCTION(BlueprintCallable, Category = "Card Info")
+    void PrintSelectedCardsInfo(FString Text);
 
 protected:
     UFUNCTION()

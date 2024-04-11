@@ -9,11 +9,11 @@
 UENUM(BlueprintType)
 enum class ESuit : uint8
 {
-	Spade UMETA(DisplayName = "Spade"), // 黑桃
-	Heart UMETA(DisplayName = "Heart"), // 红桃
-	Club UMETA(DisplayName = "Club"), // 梅花
-	Diamond UMETA(DisplayName = "Diamond"), // 方块
-	Joker UMETA(DisplayName = "Joker") // 鬼牌
+	Spade UMETA(DisplayName = "黑桃"), // 黑桃
+	Heart UMETA(DisplayName = "红桃"), // 红桃
+	Club UMETA(DisplayName = "梅花"), // 梅花
+	Diamond UMETA(DisplayName = "方块"), // 方块
+	Joker UMETA(DisplayName = "鬼牌") // 鬼牌
 };
 
 // 定义扑克牌的值
@@ -37,6 +37,46 @@ enum class ECardValue : uint8
 	JokerA UMETA(DisplayName = "JokerA"),
 	JokerB UMETA(DisplayName = "JokerB")
 };
+
+FString GetCardValueString(ECardValue Value)
+{
+	switch (Value)
+	{
+	case ECardValue::Ace:
+		return "A";
+	case ECardValue::J:
+		return "J";
+	case ECardValue::Q:
+		return "Q";
+	case ECardValue::K:
+		return "K";
+	case ECardValue::JokerA:
+		return "JokerA";
+	case ECardValue::JokerB:
+		return "JokerB";
+	default:
+		return FString::FromInt(static_cast<int32>(Value));
+	}
+}
+
+FString GetCardSuitString(ESuit Suit)
+{
+	//switch (Suit)
+	//{
+	//	case ESuit::Spade:
+	//		return "黑桃";
+	//	case ESuit::Heart:
+	//		return "红桃";
+	//	case ESuit::Club:
+	//		return "梅花";
+	//	case ESuit::Diamond:
+	//		return "方片";
+	//	case ESuit::Joker:
+	//		return "鬼牌";
+	//}
+
+	return UEnum::GetValueAsString(Suit);
+}
 
 USTRUCT(BlueprintType)
 struct FCardDataTable : public FTableRowBase

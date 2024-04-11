@@ -250,6 +250,10 @@ bool URedTenCardFunctionLibrary::IsStraight(const TArray<FCard>& Cards, ECardVal
 	{
 		return false;
 	}
+	else
+	{
+		return true;
+	}
 
 	// 用于计数每个牌值的数量，癞子另外计数
 	TMap<ECardValue, int32> CardCounts;
@@ -344,6 +348,57 @@ bool URedTenCardFunctionLibrary::IsSingle(const TArray<FCard>& Cards, ECardValue
 	HightestValue = Cards[0].Value;
 
 	return true;
+}
+
+int32 URedTenCardFunctionLibrary::GetCardPriority(const FCard& Card)
+{
+	if(Card.Value == ECardValue::Ten && (Card.Suit == ESuit::Heart || Card.Suit == ESuit::Diamond))
+		return 1;
+	if (Card.Value == ECardValue::Two)
+		return 2;
+	if (Card.Value == ECardValue::Ace)
+		return 3;
+	if (Card.Value == ECardValue::K)
+		return 4;
+	if (Card.Value == ECardValue::Q)
+		return 5;
+	if (Card.Value == ECardValue::J)
+		return 6;
+	if (Card.Value == ECardValue::Ten)
+		return 7;
+	if (Card.Value == ECardValue::Nine)
+		return 8;
+	if (Card.Value == ECardValue::Eight)
+		return 9;
+	if (Card.Value == ECardValue::Seven)
+		return 10;
+	if (Card.Value == ECardValue::Six)
+		return 11;
+	if (Card.Value == ECardValue::JokerA)
+		return 12;
+	if (Card.Value == ECardValue::JokerB)
+		return 13;
+
+	return 14; // 默认优先级，用于处理未知的牌
+}
+
+int32 URedTenCardFunctionLibrary::SortCards(TArray<FCard>& Cards)
+{
+	if (Cards.Num() > 1)
+	{
+		Cards.Sort([](const FCard& A, const FCard& B)
+			{
+				int32 PriorityA = GetCardPriority(A);
+				int32 PriorityB = GetCardPriority(B);
+				if (PriorityA != PriorityB)
+				{
+					return PriorityA < PriorityB;
+				}
+
+				return static_cast<int32>(A.Suit) < static_cast<int32>(B.Suit);
+			});
+	}
+	return int32();
 }
 
 bool URedTenCardFunctionLibrary::CustomRedTenCardSort(const FCard& A, const FCard& B)

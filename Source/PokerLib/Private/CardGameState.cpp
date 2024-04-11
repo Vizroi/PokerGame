@@ -78,6 +78,7 @@ void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 			{
 				FCard Card = CardDeck->DealOneCard();
 				PlayerState->AddCardToHand(Card);
+				PlayerState->SortHandCards();
 			}
 		}
 	}

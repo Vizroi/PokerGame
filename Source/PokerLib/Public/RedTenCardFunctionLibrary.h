@@ -50,6 +50,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
 	static bool IsSingle(const TArray<FCard>& Cards, ECardValue& HightestValue);
 
+	//get card priority
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static int32 GetCardPriority(const FCard& Card);
+
+	//sort cards
+	UFUNCTION(BlueprintCallable, Category = "Cards Sort")
+	static int32 SortCards(TArray<FCard>& Cards);
+
 private:
 	bool CustomRedTenCardSort(const FCard& A, const FCard& B);
 };

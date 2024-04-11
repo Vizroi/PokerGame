@@ -47,6 +47,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
+	void SortHandCards();
+
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
 	bool SelectCard(int32 CardId);
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")

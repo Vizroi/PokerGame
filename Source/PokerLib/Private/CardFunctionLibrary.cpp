@@ -10,10 +10,10 @@ bool UCardFunctionLibrary::IsJoker(const FCard& Card)
 
 void UCardFunctionLibrary::PrintCardInfo(const FCard& Card)
 {
-    FString SuitString = UEnum::GetValueAsString(Card.Suit);
-    FString ValueString = UEnum::GetValueAsString(Card.Value);
+    FString SuitString = GetCardSuitString(Card.Suit);
+    FString ValueString = GetCardValueString(Card.Value);
 
-    UE_LOG(LogTemp, Warning, TEXT("Card Info: %s of %s"), *ValueString, *SuitString);
+    UE_LOG(LogTemp, Warning, TEXT("Card Info: %s of %s"), *SuitString , *ValueString);
 }
 
 UTexture2D* UCardFunctionLibrary::GetCardTexture(ESuit Suit, ECardValue Value, UDataTable* DataTable)
