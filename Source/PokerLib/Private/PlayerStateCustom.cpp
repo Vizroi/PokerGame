@@ -16,7 +16,7 @@ APlayerStateCustom::APlayerStateCustom()
     HandCards.Empty();
     HandCardsCount = 0;
 
-    BetScore = 0;
+    PlayerBetScore = 0;
     TeamID = ETeamID::InValid;
 }
 
@@ -28,9 +28,9 @@ void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(APlayerStateCustom, PlayerCustomName);
     DOREPLIFETIME(APlayerStateCustom, bIsReady); 
     DOREPLIFETIME(APlayerStateCustom, HandCardsCount);
-    DOREPLIFETIME(APlayerStateCustom, TeamID);
-    DOREPLIFETIME(APlayerStateCustom, BetScore);
+    DOREPLIFETIME(APlayerStateCustom, PlayerBetScore);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, HandCards, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(APlayerStateCustom, TeamID, COND_OwnerOnly);
 }
 
 void APlayerStateCustom::SetPlayerIndex(int32 Index)
@@ -167,6 +167,26 @@ void APlayerStateCustom::UpdateCardsCount()
     }
 }
 
+void APlayerStateCustom::HasReadTen(bool& HasHeartTen, bool& HasDiamondTen)
+{
+    HasHeartTen = false;
+    HasDiamondTen = false;
+    for (FCard& Card : HandCards)
+    {
+        if (Card.Value == ECardValue::Ten)
+        {
+            if (Card.Suit == ESuit::Heart)
+            {
+                HasHeartTen = true;
+            }
+            else if (Card.Suit == ESuit::Diamond)
+            {
+                HasDiamondTen = true;
+            }
+        }
+    }
+}
+
 int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
 {
     int32 SeatIndex = -1;
@@ -184,39 +204,30 @@ int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
     return SeatIndex;
 }
 
-void APlayerStateCustom::HasReadTen(bool& HasHeartTen, bool& HasDiamondTen)
-{
-    HasHeartTen = false;
-	HasDiamondTen = false;
-    for (FCard& Card : HandCards)
-    {
-        if (Card.Value == ECardValue::Ten)
-        {
-            if (Card.Suit == ESuit::Heart)
-            {
-				HasHeartTen = true;
-			}
-            else if (Card.Suit == ESuit::Diamond)
-            {
-				HasDiamondTen = true;
-			}
-		}
-	}
-}
-
 void APlayerStateCustom::AssignTeamID()
 {
-    bool isHaveHeartTen = false;
-	bool isHaveDiamondTen = false;
-	HasReadTen(isHaveHeartTen, isHaveDiamondTen);
-    if (isHaveHeartTen && isHaveDiamondTen)
+    if (GetLocalRole() == ROLE_Authority)
     {
-		TeamID = ETeamID::RedTen;
-	}
-    else
+        bool isHaveHeartTen = false;
+        bool isHaveDiamondTen = false;
+        HasReadTen(isHaveHeartTen, isHaveDiamondTen);
+        if (isHaveHeartTen || isHaveDiamondTen)
+        {
+            TeamID = ETeamID::RedTen;
+        }
+        else
+        {
+            TeamID = ETeamID::NoRedTen;
+        }
+    }
+}
+
+void APlayerStateCustom::SetPlayerBetScore(int32 ScoreValue)
+{
+    if (GetLocalRole() == ROLE_Authority)
     {
-		TeamID = ETeamID::NoRedTen;
-	}
+        PlayerBetScore = ScoreValue;
+    }
 }
 
 void APlayerStateCustom::PrintHandsCardsInfo(FString Text)
@@ -265,6 +276,11 @@ void APlayerStateCustom::OnRep_HandCardsCount()
     NotifyPlayerCardsCountToMainMenuBase();
 }
 
+void APlayerStateCustom::OnRep_TeamIDChange()
+{
+    NotifyPlayerTeamIdToMainMenuBase();
+}
+
 void APlayerStateCustom::NotifyPlayerJoinMainMenuBase()
 {
 	ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -307,5 +323,14 @@ void APlayerStateCustom::NotifyPlayerCardsCountToMainMenuBase()
     if (PC)
     {
         PC->OnUpdateCardCountReceived(this);
+    }
+}
+
+void APlayerStateCustom::NotifyPlayerTeamIdToMainMenuBase()
+{
+    ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    if (PC)
+    {
+        PC->OnTeamIdReceived(this);
     }
 }

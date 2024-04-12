@@ -5,6 +5,7 @@
 #include "PlayerStateCustom.h"
 #include "CardGameMode.h"
 #include "RedTenCardFunctionLibrary.h"
+#include <CardGameState.h>
 
 ACardPlayerController::ACardPlayerController()
 {
@@ -172,6 +173,11 @@ void ACardPlayerController::ClientPlayCards()
 	}
 }
 
+void ACardPlayerController::ClientRevealAllIdentiy()
+{
+	ServerRevealAllIdentiy();
+}
+
 void ACardPlayerController::OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState)
 {
 	if (!NewPlayerState)
@@ -240,9 +246,9 @@ void ACardPlayerController::OnPlayerCardsReceived(APlayerStateCustom* NewPlayerS
 	GameMenuWidget->OnDealCards(NewPlayerState);
 }
 
-void ACardPlayerController::OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerStat)
+void ACardPlayerController::OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerState)
 {
-if (!NewPlayerStat)
+	if (!NewPlayerState)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: NewPlayerState is NULL!"));
 		return;
@@ -254,8 +260,60 @@ if (!NewPlayerStat)
 		return;
 	}
 
-	GameMenuWidget->OnUpdateCardCount(NewPlayerStat);
+	GameMenuWidget->OnUpdateCardCount(NewPlayerState);
+}
 
+void ACardPlayerController::OnTeamIdReceived(APlayerStateCustom* NewPlayerState)
+{
+	if (!NewPlayerState)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: NewPlayerState is NULL!"));
+		return;
+	}
+
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnTeamIdReceived(NewPlayerState);
+}
+
+void ACardPlayerController::OnUpdateGameScore(int32 GameScore)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnUpdateGameScore(GameScore);
+}
+
+void ACardPlayerController::OnOnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnRevealAllIdentity(PlayerTeamInfoArr);
+}
+
+void ACardPlayerController::ServerRevealAllIdentiy_Implementation()
+{
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (GS)
+	{
+		GS->RevealAllIdentiy();
+	}
+}
+
+bool ACardPlayerController::ServerRevealAllIdentiy_Validate()
+{
+	return true;
 }
 
 void ACardPlayerController::ServerSetPlayerReady_Implementation()
@@ -282,8 +340,6 @@ void ACardPlayerController::ServerSetPlayerReady_Implementation()
 
 bool ACardPlayerController::ServerSetPlayerReady_Validate()
 {
-	// 在这里可以添加一些额外的验证逻辑
-	// 例如，防止玩家在某些游戏状态下更改准备状态
 	return true;
 }
 

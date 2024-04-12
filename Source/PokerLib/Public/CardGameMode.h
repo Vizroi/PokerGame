@@ -32,6 +32,7 @@ public:
 
     //AssignTeams
     void AssignTeams();
+    void ReSetGameScore();
 
 protected:
     UPROPERTY()

@@ -38,14 +38,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
 	bool IsCardInHand(int32 CardId);
 
-	//根据手里的牌判断是否可以出牌
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
 	bool IsCanPlayCardsInHand();
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Info")
 	bool CheckPlayCards(const TArray<int32>& CardId);
 
-public:
+
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
 	void SortHandCards();
 
@@ -55,15 +54,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
 	void ClientPlayCards();
 
-public:
-
+	UFUNCTION(BlueprintCallable, Category = "Game|Score Action")
+	void ClientRevealAllIdentiy();
 
 public:
 	void OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState);
 	void OnPlayerInfoReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerReadyReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerCardsReceived(APlayerStateCustom* NewPlayerState);
-	void OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerStat);
+	void OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerState);
+	void OnTeamIdReceived(APlayerStateCustom* NewPlayerState);
+	void OnUpdateGameScore(int32 GameScore);
+	void OnOnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -72,6 +74,8 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPlayCards(const TArray<int32>& CardsId);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRevealAllIdentiy();
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI_GamePlayMenu")
 	TSubclassOf<UUIGameMainBase> GameMenuWidgetClass;

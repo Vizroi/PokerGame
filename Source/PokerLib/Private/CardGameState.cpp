@@ -3,10 +3,12 @@
 
 #include "CardGameState.h"
 #include <Net/UnrealNetwork.h>
+#include "CardPlayerController.h"
 
 ACardGameState::ACardGameState()
 {
 	bReplicates = true;
+	GameScore = 0;
 }
 
 void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,7 +16,8 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACardGameState, PlayerStateArray);
-	DOREPLIFETIME_CONDITION(ACardGameState, TeamRedTen, COND_OwnerOnly);
+	DOREPLIFETIME(ACardGameState, GameScore);
+	DOREPLIFETIME(ACardGameState, RevealedPlayers);
 }
 
 APlayerStateCustom* ACardGameState::GetPlayerStateByIndex(int32 index)
@@ -87,7 +90,6 @@ void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 
 void ACardGameState::AssignTeam()
 {
-	//检测只有在服务器端才能执行
 	if (!HasAuthority())
 	{
 		return;
@@ -101,12 +103,64 @@ void ACardGameState::AssignTeam()
 			PS->AssignTeamID();
 		}
 	}
-
 }
 
-void ACardGameState::RevealIdentiy(APlayerStateCustom* PSC)
+void ACardGameState::RevealAllIdentiy()
 {
-	
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	RevealedPlayers.Empty();
+
+	for(int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PS)
+		{
+			FPlayerTeamInfo TeamInfo;
+			TeamInfo.PlayerState = PS;
+			TeamInfo.TeamID = PS->GetTeamID();
+			RevealedPlayers.Add(TeamInfo);
+		}
+	}
+}
+
+void ACardGameState::MultiplyGameScore()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	GameScore *= 2;
+	//GameScore  += DefaultGameScore;
+}
+
+void ACardGameState::ResetGameScore()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	GameScore = DefaultGameScore;
+}
+
+void ACardGameState::AddGameScore(int32 Score)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	GameScore += Score;
+}
+
+int32 ACardGameState::GetGameScore()
+{
+	return GameScore;
 }
 
 void ACardGameState::OnRep_PlayerStateArrayChange()
@@ -120,13 +174,23 @@ void ACardGameState::OnRep_PlayerStateArrayChange()
 		}
 	}
 
-	//输出日志,当前是谁的CardGameState,并且有多少个PlayerState,以及每个PlayerState的名字
 	UE_LOG(LogTemp, Warning, TEXT("CardGameState: %s, PlayerStateArray.Num(): %d"), *GetName(), PlayerStateArray.Num());
-
 }
 
-void ACardGameState::OnRep_AssignTeam()
+void ACardGameState::OnRep_RevealedTeamInfo()
 {
-	//输出日志,分配好的队伍型是怎样
-	UE_LOG(LogTemp, Warning, TEXT("TeamRedTen.Num(): %d"), TeamRedTen.Num());
+	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		PC->OnOnRevealAllIdentity(RevealedPlayers);
+	}
+}
+
+void ACardGameState::OnRep_GameScoreChange()
+{
+	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		PC->OnUpdateGameScore(GameScore);
+	}
 }

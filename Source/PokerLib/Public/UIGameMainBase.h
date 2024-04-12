@@ -37,7 +37,18 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnUpdateCardCount(APlayerStateCustom* PlayerState);
 
+	//当玩家队伍更新
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnTeamIdReceived(APlayerStateCustom* PlayerState);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnUpdateGameScore(int32 GameScore);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
+
 	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnSelectCard();
+
 };

@@ -99,6 +99,7 @@ void ACardGameMode::StartGame()
 		InitializeCards(EDeckMode::RedTen);
 		DealCardsToPlayers();
 		AssignTeams();
+		ReSetGameScore();
 	}
 }
 
@@ -130,5 +131,14 @@ void ACardGameMode::AssignTeams()
 	if (CardGameState)
 	{
 		CardGameState->AssignTeam();
+	}
+}
+
+void ACardGameMode::ReSetGameScore()
+{
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (CardGameState)
+	{
+		CardGameState->ResetGameScore();
 	}
 }

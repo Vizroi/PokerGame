@@ -6,8 +6,10 @@
 #include "GameFramework/GameStateBase.h"
 #include "Deck.h"
 #include "PlayerStateCustom.h"
+#include "PlayerTeamInfo.h"
 #include "CardGameState.generated.h"
 
+int32 DefaultGameScore = 10;
 
 UCLASS()
 class POKERLIB_API ACardGameState : public AGameStateBase
@@ -39,7 +41,20 @@ public:
 	void AssignTeam();
 
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
-	void RevealIdentiy(APlayerStateCustom* PSC);
+	void RevealAllIdentiy();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Game Score")
+	void MultiplyGameScore();
+
+	UFUNCTION(BlueprintCallable, Category = "Game Score")
+	void ResetGameScore();
+
+	UFUNCTION(BlueprintCallable, Category = "Game Score")
+	void AddGameScore(int32 Score);
+
+	UFUNCTION(BlueprintCallable, Category = "Game Score")
+	int32 GetGameScore();
 
 public:
 	//通过位运算的变量来知道当前哪个位置是空的
@@ -51,12 +66,18 @@ public:
 	void OnRep_PlayerStateArrayChange();
 
 	UFUNCTION()
-	void OnRep_AssignTeam();
+	void OnRep_RevealedTeamInfo();
 
+	UFUNCTION()
+	void OnRep_GameScoreChange();
+	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange)
 	TArray<APlayerStateCustom*> PlayerStateArray;
 
-	UPROPERTY(ReplicatedUsing = OnRep_AssignTeam)
-	TArray<APlayerStateCustom*> TeamRedTen;
+	UPROPERTY(ReplicatedUsing = OnRep_RevealedTeamInfo)
+	TArray<FPlayerTeamInfo> RevealedPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_GameScoreChange)
+	int32 GameScore = 0;
 };

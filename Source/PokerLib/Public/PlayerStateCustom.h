@@ -78,19 +78,21 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void UpdateCardsCount();
 
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void HasReadTen(bool& HasHeartTen, bool& HasDiamondTen);
+
     // 通过PlayerIndex获取在当前屏幕的哪个座位
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
 
-    // 手里是否拥有红桃10
-    UFUNCTION(BlueprintCallable, Category = "Card Game")
-    void HasReadTen(bool& HasHeartTen, bool& HasDiamondTen);
-
-    // 分配队伍
     UFUNCTION(BlueprintCallable, Category = "Team Info")
     void AssignTeamID();
 
+    UFUNCTION(BlueprintCallable, Category = "Team Info")
+	ETeamID GetTeamID() const { return TeamID; }
 
+    UFUNCTION(BlueprintCallable, Category = "Score Info")
+    void SetPlayerBetScore(int32 ScoreValue);
 public:
     //输出当前手里的卡牌信息
     UFUNCTION(BlueprintCallable, Category = "Card Info")
@@ -116,6 +118,9 @@ protected:
     UFUNCTION()
     void OnRep_HandCardsCount();
 
+    UFUNCTION()
+    void OnRep_TeamIDChange();
+
 protected:
     UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "Player Status")
     int32 PlayerIndex = -1;
@@ -133,32 +138,18 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_HandCardsCount, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
     int32 HandCardsCount;
 
+    UPROPERTY(ReplicatedUsing = OnRep_TeamIDChange, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
+    ETeamID TeamID;
+
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
+    int32 PlayerBetScore;
+
 public:
     void NotifyPlayerJoinMainMenuBase();
     void NotifyPlayerInfoToMainMenuBase();
     void NotifyPlayerReadyToMainMenuBase();
     void NotifyPlayerCardsToMainMenuBase();
     void NotifyPlayerCardsCountToMainMenuBase();
-
-
-
-
-
-
-
-
-
-
-
-
-// ---------------------------------------------------------------
-public:
-    // 玩家押注的分数
-    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
-    int32 BetScore;
-
-    // 玩家所属的队伍
-    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
-    ETeamID TeamID;
+    void NotifyPlayerTeamIdToMainMenuBase();
 };
 
