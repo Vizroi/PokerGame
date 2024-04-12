@@ -54,6 +54,15 @@ void APlayerStateCustom::SetPlayerReady(bool value)
     }
 }
 
+void APlayerStateCustom::ClearHandCards()
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		HandCards.Empty();
+		UpdateCardsCount();
+	}
+}
+
 void APlayerStateCustom::AddCardToHand(const FCard& Card)
 {
     if (GetLocalRole() == ROLE_Authority)

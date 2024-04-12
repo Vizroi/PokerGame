@@ -67,7 +67,6 @@ int32 ACardGameState::GetPlayerStateReadyCount()
 
 void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 {
-	//检测只有在服务器端才能执行
 	if (!HasAuthority())
 	{
 		return;
@@ -78,6 +77,8 @@ void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
 		if (PlayerState)
 		{
+			PlayerState->ClearHandCards();
+
 			for (int32 j = 0; j < 10; ++j)
 			{
 				FCard Card = CardDeck->DealOneCard();

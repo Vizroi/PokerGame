@@ -50,6 +50,9 @@ public:
     bool GetPlayerReady() const { return bIsReady; }
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")
+	void ClearHandCards();
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
     void AddCardToHand(const FCard& Card);
 
     //Remove CardToHand

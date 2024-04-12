@@ -27,6 +27,7 @@ public:
 
     void OnPlayerReady();
     void StartGame();
+    void ReStartGame();
     void InitializeCards(EDeckMode Mode);
     void DealCardsToPlayers();
 

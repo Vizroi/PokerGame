@@ -17,7 +17,6 @@ void ACardGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	// 为新玩家创建PlayerState
 	APlayerStateCustom* NewPlayerState = Cast<APlayerStateCustom>(NewPlayer->PlayerState);
 	if (NewPlayerState)
 	{
@@ -26,7 +25,6 @@ void ACardGameMode::PostLogin(APlayerController* NewPlayer)
 
 		int32 PlayerIndex = -1;
 
-		//获取GameState
 		ACardGameState* CardGameState = GetGameState<ACardGameState>();
 		if (CardGameState)
 		{
@@ -85,7 +83,6 @@ void ACardGameMode::OnPlayerReady()
 
 	if (PlayerReadyCount == 4)
 	{
-		// 所有玩家都已准备，开始游戏
 		StartGame();
 	}
 }
@@ -95,12 +92,16 @@ void ACardGameMode::StartGame()
 	if (!bGameStarted)
 	{
 		bGameStarted = true;
-		// Default RedTen
-		InitializeCards(EDeckMode::RedTen);
-		DealCardsToPlayers();
-		AssignTeams();
-		ReSetGameScore();
+		ReStartGame();
 	}
+}
+
+void ACardGameMode::ReStartGame()
+{
+	InitializeCards(EDeckMode::RedTen);
+	DealCardsToPlayers();
+	AssignTeams();
+	ReSetGameScore();
 }
 
 void ACardGameMode::InitializeCards(EDeckMode Mode)
