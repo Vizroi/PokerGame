@@ -173,9 +173,20 @@ void ACardPlayerController::ClientPlayCards()
 	}
 }
 
-void ACardPlayerController::ClientRevealAllIdentiy()
+void ACardPlayerController::ClientRevealAllIdentiy(bool IsReveal)
 {
-	ServerRevealAllIdentiy();
+	ServerRevealAllIdentiy(IsReveal);
+}
+
+void ACardPlayerController::OnGamePhaseChange(EGamePhase CurGamePhase)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnGamePhaseChange(CurGamePhase);
 }
 
 void ACardPlayerController::OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState)
@@ -291,7 +302,7 @@ void ACardPlayerController::OnUpdateGameScore(int32 GameScore)
 	GameMenuWidget->OnUpdateGameScore(GameScore);
 }
 
-void ACardPlayerController::OnOnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr)
+void ACardPlayerController::OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr)
 {
 	if (!GameMenuWidget)
 	{
@@ -302,16 +313,28 @@ void ACardPlayerController::OnOnRevealAllIdentity(const TArray<FPlayerTeamInfo>&
 	GameMenuWidget->OnRevealAllIdentity(PlayerTeamInfoArr);
 }
 
-void ACardPlayerController::ServerRevealAllIdentiy_Implementation()
+void ACardPlayerController::OnPlayerIdentityUpdate(EIdentityStatus Status)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnPlayerIdentityUpdate(Status);
+
+}
+
+void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 {
 	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
 	if (GS)
 	{
-		GS->RevealAllIdentiy();
+		GS->RevealAllIdentiy(IsReveal);
 	}
 }
 
-bool ACardPlayerController::ServerRevealAllIdentiy_Validate()
+bool ACardPlayerController::ServerRevealAllIdentiy_Validate(bool IsReveal)
 {
 	return true;
 }

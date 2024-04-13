@@ -31,6 +31,7 @@ void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(APlayerStateCustom, PlayerBetScore);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, HandCards, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, TeamID, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(APlayerStateCustom, IdentityStatus, COND_OwnerOnly);
 }
 
 void APlayerStateCustom::SetPlayerIndex(int32 Index)
@@ -176,6 +177,19 @@ void APlayerStateCustom::UpdateCardsCount()
     }
 }
 
+bool APlayerStateCustom::HasCard(ESuit Suit, ECardValue Value)
+{
+    for (FCard& Card : HandCards)
+    {
+        if (Card.Suit == Suit && Card.Value == Value)
+        {
+			return true;
+		}
+	}
+
+    return false;
+}
+
 void APlayerStateCustom::HasReadTen(bool& HasHeartTen, bool& HasDiamondTen)
 {
     HasHeartTen = false;
@@ -290,6 +304,11 @@ void APlayerStateCustom::OnRep_TeamIDChange()
     NotifyPlayerTeamIdToMainMenuBase();
 }
 
+void APlayerStateCustom::OnRep_IdentityStatusChange()
+{
+    NotifyPlayerIdentityStatusToMenuBase();
+}
+
 void APlayerStateCustom::NotifyPlayerJoinMainMenuBase()
 {
 	ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
@@ -342,4 +361,13 @@ void APlayerStateCustom::NotifyPlayerTeamIdToMainMenuBase()
     {
         PC->OnTeamIdReceived(this);
     }
+}
+
+void APlayerStateCustom::NotifyPlayerIdentityStatusToMenuBase()
+{
+    ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    if (PC)
+    {
+		PC->OnPlayerIdentityUpdate(IdentityStatus);
+	}
 }

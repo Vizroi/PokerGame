@@ -44,6 +44,7 @@ void ACardGameMode::PostLogin(APlayerController* NewPlayer)
 			NewPlayerState->SetPlayerReady(false);
 
 			CardGameState->AddPlayerStateArray(NewPlayerState);
+			CardGameState->ChangeGamePhase(EGamePhase::WaitingForPlayers);
 		}
 	}
 
@@ -91,13 +92,13 @@ void ACardGameMode::StartGame()
 {
 	if (!bGameStarted)
 	{
-		bGameStarted = true;
 		ReStartGame();
 	}
 }
 
 void ACardGameMode::ReStartGame()
 {
+	bGameStarted = true;
 	InitializeCards(EDeckMode::RedTen);
 	DealCardsToPlayers();
 	AssignTeams();
@@ -122,6 +123,7 @@ void ACardGameMode::DealCardsToPlayers()
 	ACardGameState* CardGameState = GetGameState<ACardGameState>();
 	if (CardGameState)
 	{
+		CardGameState->ChangeGamePhase(EGamePhase::DealingCards);
 		CardGameState->DealCardToPlayer(GameDeck);
 	}
 }
@@ -131,7 +133,9 @@ void ACardGameMode::AssignTeams()
 	ACardGameState* CardGameState = GetGameState<ACardGameState>();
 	if (CardGameState)
 	{
+		CardGameState->ChangeGamePhase(EGamePhase::AssigningTeams);
 		CardGameState->AssignTeam();
+		CardGameState->ChangeGamePhase(EGamePhase::RevealingTeams);
 	}
 }
 

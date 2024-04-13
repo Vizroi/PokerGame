@@ -16,6 +16,10 @@ class POKERLIB_API UUIGameMainBase : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnGamePhaseChange(EGamePhase GamePhase);
+
 	//玩家加入房间
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnPlayerJoinRoom(APlayerStateCustom* PlayerState);
@@ -28,7 +32,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnPlayerReady(APlayerStateCustom* PlayerState);
 
-
+		
 	//给玩家发牌
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnDealCards(APlayerStateCustom* PlayerState);
@@ -46,6 +50,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnPlayerIdentityUpdate(EIdentityStatus Status);
+	
 
 	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")

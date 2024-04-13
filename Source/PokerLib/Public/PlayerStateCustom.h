@@ -7,13 +7,20 @@
 #include "GameFramework/PlayerState.h"
 #include "PlayerStateCustom.generated.h"
 
-//队伍两种，一种是有红10，一种是没有的
 UENUM(BlueprintType)
 enum class ETeamID : uint8
 {
     InValid UMETA(DisplayName = "InValid"),
 	RedTen UMETA(DisplayName = "RedTen"),
 	NoRedTen UMETA(DisplayName = "NoRedTen")
+};
+
+UENUM(BlueprintType)
+enum class EIdentityStatus : uint8
+{
+    InValid UMETA(DisplayName = "InValid"),
+	Identity UMETA(DisplayName = "Identity"),
+	NoIdentity UMETA(DisplayName = "NoIdentity")
 };
 
 
@@ -82,6 +89,9 @@ public:
     void UpdateCardsCount();
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")
+    bool HasCard(ESuit Suit, ECardValue Value);
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
     void HasReadTen(bool& HasHeartTen, bool& HasDiamondTen);
 
     // 通过PlayerIndex获取在当前屏幕的哪个座位
@@ -98,11 +108,11 @@ public:
     void SetPlayerBetScore(int32 ScoreValue);
 public:
     //输出当前手里的卡牌信息
-    UFUNCTION(BlueprintCallable, Category = "Card Info")
+    UFUNCTION(BlueprintCallable, Category = "Debug Card Info")
     void PrintHandsCardsInfo(FString Text);
 
     //输出当前手里被选中的卡牌信息
-    UFUNCTION(BlueprintCallable, Category = "Card Info")
+    UFUNCTION(BlueprintCallable, Category = "Debug Card Info")
     void PrintSelectedCardsInfo(FString Text);
 
 protected:
@@ -123,6 +133,9 @@ protected:
 
     UFUNCTION()
     void OnRep_TeamIDChange();
+
+    UFUNCTION()
+    void OnRep_IdentityStatusChange();
 
 protected:
     UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "Player Status")
@@ -147,6 +160,9 @@ protected:
     UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
     int32 PlayerBetScore;
 
+    UPROPERTY(ReplicatedUsing = OnRep_IdentityStatusChange, VisibleAnywhere, BlueprintReadWrite, Category = "Player Status")
+    EIdentityStatus IdentityStatus = EIdentityStatus::InValid;
+
 public:
     void NotifyPlayerJoinMainMenuBase();
     void NotifyPlayerInfoToMainMenuBase();
@@ -154,5 +170,6 @@ public:
     void NotifyPlayerCardsToMainMenuBase();
     void NotifyPlayerCardsCountToMainMenuBase();
     void NotifyPlayerTeamIdToMainMenuBase();
+    void NotifyPlayerIdentityStatusToMenuBase();
 };
 

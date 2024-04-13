@@ -9,6 +9,7 @@ ACardGameState::ACardGameState()
 {
 	bReplicates = true;
 	GameScore = 0;
+	CurrentGamePhase = EGamePhase::WaitingForPlayers;
 }
 
 void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -18,6 +19,20 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACardGameState, PlayerStateArray);
 	DOREPLIFETIME(ACardGameState, GameScore);
 	DOREPLIFETIME(ACardGameState, RevealedPlayers);
+	DOREPLIFETIME(ACardGameState, CurrentGamePhase);
+}
+
+void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CurrentGamePhase != NewGamePhase)
+	{
+		CurrentGamePhase = NewGamePhase;
+	}
 }
 
 APlayerStateCustom* ACardGameState::GetPlayerStateByIndex(int32 index)
@@ -25,7 +40,6 @@ APlayerStateCustom* ACardGameState::GetPlayerStateByIndex(int32 index)
 	//遍历整个PlayerStateArray
 	for (int32 i = 0; i < PlayerStateArray.Num(); i++)
 	{
-		//转换PlayerStateArray[i]的类型为 ACardPlatyerState
 		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
 		if (PlayerState)
 		{
@@ -106,24 +120,29 @@ void ACardGameState::AssignTeam()
 	}
 }
 
-void ACardGameState::RevealAllIdentiy()
+void ACardGameState::RevealAllIdentiy(bool IsReveal)
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
 
-	RevealedPlayers.Empty();
+	//TODO ;;;; IdentityStatus 根据该值来判断是否所有人都决策完毕，然后通知给所有人，然后开始发牌
 
-	for(int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	if (IsReveal)
 	{
-		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
-		if (PS)
+		RevealedPlayers.Empty();
+
+		for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
 		{
-			FPlayerTeamInfo TeamInfo;
-			TeamInfo.PlayerState = PS;
-			TeamInfo.TeamID = PS->GetTeamID();
-			RevealedPlayers.Add(TeamInfo);
+			APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+			if (PS)
+			{
+				FPlayerTeamInfo TeamInfo;
+				TeamInfo.PlayerState = PS;
+				TeamInfo.TeamID = PS->GetTeamID();
+				RevealedPlayers.Add(TeamInfo);
+			}
 		}
 	}
 }
@@ -164,6 +183,15 @@ int32 ACardGameState::GetGameScore()
 	return GameScore;
 }
 
+void ACardGameState::OnRep_GamePhaseChange()
+{
+	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		PC->OnGamePhaseChange(CurrentGamePhase);
+	}
+}
+
 void ACardGameState::OnRep_PlayerStateArrayChange()
 {
 	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
@@ -183,7 +211,7 @@ void ACardGameState::OnRep_RevealedTeamInfo()
 	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PC)
 	{
-		PC->OnOnRevealAllIdentity(RevealedPlayers);
+		PC->OnRevealAllIdentity(RevealedPlayers);
 	}
 }
 

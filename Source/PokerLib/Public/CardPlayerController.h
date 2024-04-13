@@ -55,9 +55,10 @@ public:
 	void ClientPlayCards();
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Score Action")
-	void ClientRevealAllIdentiy();
+	void ClientRevealAllIdentiy(bool IsReveal);
 
 public:
+	void OnGamePhaseChange(EGamePhase CurGamePhase);
 	void OnPlayerJoinRoom(APlayerStateCustom* NewPlayerState);
 	void OnPlayerInfoReceived(APlayerStateCustom* NewPlayerState);
 	void OnPlayerReadyReceived(APlayerStateCustom* NewPlayerState);
@@ -65,7 +66,8 @@ public:
 	void OnUpdateCardCountReceived(APlayerStateCustom* NewPlayerState);
 	void OnTeamIdReceived(APlayerStateCustom* NewPlayerState);
 	void OnUpdateGameScore(int32 GameScore);
-	void OnOnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
+	void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
+	void OnPlayerIdentityUpdate(EIdentityStatus Status);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -75,7 +77,7 @@ protected:
 	void ServerPlayCards(const TArray<int32>& CardsId);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRevealAllIdentiy();
+	void ServerRevealAllIdentiy(bool IsReveal);
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI_GamePlayMenu")
 	TSubclassOf<UUIGameMainBase> GameMenuWidgetClass;

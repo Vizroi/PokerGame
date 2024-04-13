@@ -11,6 +11,18 @@
 
 int32 DefaultGameScore = 10;
 
+UENUM(BlueprintType)
+enum class EGamePhase : uint8
+{
+	WaitingForPlayers,
+	DealingCards,
+	AssigningTeams,
+	RevealingTeams,
+	Playing,
+	GameOver
+};
+
+
 UCLASS()
 class POKERLIB_API ACardGameState : public AGameStateBase
 {
@@ -19,6 +31,9 @@ class POKERLIB_API ACardGameState : public AGameStateBase
 public:
 	ACardGameState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
+	void ChangeGamePhase(EGamePhase NewGameState);
 
 public:
 	//get player custom satete by index
@@ -41,7 +56,7 @@ public:
 	void AssignTeam();
 
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
-	void RevealAllIdentiy();
+	void RevealAllIdentiy(bool IsReveal);
 
 
 	UFUNCTION(BlueprintCallable, Category = "Game Score")
@@ -63,6 +78,9 @@ public:
 
 public:
 	UFUNCTION()
+	void OnRep_GamePhaseChange();
+
+	UFUNCTION()
 	void OnRep_PlayerStateArrayChange();
 
 	UFUNCTION()
@@ -80,4 +98,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_GameScoreChange)
 	int32 GameScore = 0;
+
+	UPROPERTY(ReplicatedUsing = OnRep_GamePhaseChange)
+	EGamePhase  CurrentGamePhase = EGamePhase::WaitingForPlayers;
 };
