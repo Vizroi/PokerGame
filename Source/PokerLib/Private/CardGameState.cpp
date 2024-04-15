@@ -120,29 +120,25 @@ void ACardGameState::AssignTeam()
 	}
 }
 
-void ACardGameState::RevealAllIdentiy(bool IsReveal)
+void ACardGameState::RevealAllIdentiy()
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
 
-	//TODO ;;;; IdentityStatus 根据该值来判断是否所有人都决策完毕，然后通知给所有人，然后开始发牌
+	RevealedPlayers.Empty();
 
-	if (IsReveal)
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
 	{
-		RevealedPlayers.Empty();
-
-		for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PS)
 		{
-			APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
-			if (PS)
-			{
-				FPlayerTeamInfo TeamInfo;
-				TeamInfo.PlayerState = PS;
-				TeamInfo.TeamID = PS->GetTeamID();
-				RevealedPlayers.Add(TeamInfo);
-			}
+			PS->SetIdentityStatus(EIdentityStatus::Identity);
+			FPlayerTeamInfo TeamInfo;
+			TeamInfo.PlayerState = PS;
+			TeamInfo.TeamID = PS->GetTeamID();
+			RevealedPlayers.Add(TeamInfo);
 		}
 	}
 }

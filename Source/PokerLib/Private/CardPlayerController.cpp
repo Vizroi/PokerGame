@@ -327,10 +327,27 @@ void ACardPlayerController::OnPlayerIdentityUpdate(EIdentityStatus Status)
 
 void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 {
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (PS)
+	{
+		if (IsReveal)
+		{
+			PS->SetIdentityStatus(EIdentityStatus::Identity);
+		}
+		else
+		{
+			PS->SetIdentityStatus(EIdentityStatus::NoIdentity);
+			return;
+		}
+	}
+
 	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
 	if (GS)
 	{
-		GS->RevealAllIdentiy(IsReveal);
+		if (IsReveal)
+		{
+			GS->RevealAllIdentiy();
+		}
 	}
 }
 

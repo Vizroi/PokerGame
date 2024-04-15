@@ -245,6 +245,17 @@ void APlayerStateCustom::AssignTeamID()
     }
 }
 
+void APlayerStateCustom::SetIdentityStatus(EIdentityStatus Status)
+{
+    if (GetLocalRole() == ROLE_Authority)
+	{
+        if (IdentityStatus != Status)
+        {
+            IdentityStatus = Status;
+        }
+	}
+}
+
 void APlayerStateCustom::SetPlayerBetScore(int32 ScoreValue)
 {
     if (GetLocalRole() == ROLE_Authority)

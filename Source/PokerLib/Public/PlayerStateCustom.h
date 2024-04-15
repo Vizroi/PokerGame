@@ -104,6 +104,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Team Info")
 	ETeamID GetTeamID() const { return TeamID; }
 
+    UFUNCTION(BlueprintCallable, Category = "Team Info")
+    void SetIdentityStatus(EIdentityStatus Status);
+    
+
     UFUNCTION(BlueprintCallable, Category = "Score Info")
     void SetPlayerBetScore(int32 ScoreValue);
 public:

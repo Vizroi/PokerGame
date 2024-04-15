@@ -56,7 +56,7 @@ public:
 	void AssignTeam();
 
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
-	void RevealAllIdentiy(bool IsReveal);
+	void RevealAllIdentiy();
 
 
 	UFUNCTION(BlueprintCallable, Category = "Game Score")
