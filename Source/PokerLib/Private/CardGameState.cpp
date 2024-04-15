@@ -10,6 +10,7 @@ ACardGameState::ACardGameState()
 	bReplicates = true;
 	GameScore = 0;
 	CurrentGamePhase = EGamePhase::WaitingForPlayers;
+	CurrentPlayerIndex = -1;
 }
 
 void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -20,6 +21,7 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACardGameState, GameScore);
 	DOREPLIFETIME(ACardGameState, RevealedPlayers);
 	DOREPLIFETIME(ACardGameState, CurrentGamePhase);
+	DOREPLIFETIME(ACardGameState, CurrentPlayerIndex);
 }
 
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
@@ -143,6 +145,23 @@ void ACardGameState::RevealAllIdentiy()
 	}
 }
 
+bool ACardGameState::CheckAllPlayerIdentityStatusValid()
+{
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PS)
+		{
+			EIdentityStatus Status = PS->GetIdentityStatus();
+			if (Status == EIdentityStatus::InValid)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 void ACardGameState::MultiplyGameScore()
 {
 	if (!HasAuthority())
@@ -177,6 +196,46 @@ void ACardGameState::AddGameScore(int32 Score)
 int32 ACardGameState::GetGameScore()
 {
 	return GameScore;
+}
+
+void ACardGameState::SetCurrentPlayerIndex(int32 Index)
+{
+	if (!HasAuthority())
+	{
+		CurrentPlayerIndex = Index;
+	}
+}
+
+void ACardGameState::MoveToNextPlayer()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CurrentPlayerIndex < 0)
+	{
+		for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+		{
+			APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+			if (PlayerState)
+			{
+				bool HasHeartSix = PlayerState->HasCard(ESuit::Heart, ECardValue::Six);
+				if (HasHeartSix)
+				{
+					CurrentPlayerIndex = PlayerState->GetPlayerIndex();
+				}
+			}
+		}
+	}
+	else
+	{
+		CurrentPlayerIndex++;
+		if (CurrentPlayerIndex >= PlayerStateArray.Num())
+		{
+			CurrentPlayerIndex = 0;
+		}
+	}
 }
 
 void ACardGameState::OnRep_GamePhaseChange()
@@ -217,5 +276,14 @@ void ACardGameState::OnRep_GameScoreChange()
 	if (PC)
 	{
 		PC->OnUpdateGameScore(GameScore);
+	}
+}
+
+void ACardGameState::OnRep_CurrentPlayerIndexChange()
+{
+	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		PC->OnCurrentPlayerIndexChange(CurrentPlayerIndex);
 	}
 }

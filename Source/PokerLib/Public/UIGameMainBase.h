@@ -55,6 +55,9 @@ public:
 		void OnPlayerIdentityUpdate(EIdentityStatus Status);
 	
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnCurrentPlayerIndexChange(int32 CurPlayerIndex);
+
 	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnSelectCard();

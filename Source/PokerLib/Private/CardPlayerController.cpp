@@ -325,6 +325,17 @@ void ACardPlayerController::OnPlayerIdentityUpdate(EIdentityStatus Status)
 
 }
 
+void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex)
+{
+if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex);
+}
+
 void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 {
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
@@ -337,7 +348,6 @@ void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 		else
 		{
 			PS->SetIdentityStatus(EIdentityStatus::NoIdentity);
-			return;
 		}
 	}
 
@@ -347,6 +357,13 @@ void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 		if (IsReveal)
 		{
 			GS->RevealAllIdentiy();
+		}
+
+		bool IsAllPlayerStatusValid = GS->CheckAllPlayerIdentityStatusValid();
+		if (IsAllPlayerStatusValid)
+		{
+			GS->MoveToNextPlayer();
+			GS->ChangeGamePhase(EGamePhase::Playing);
 		}
 	}
 }

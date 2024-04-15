@@ -68,6 +68,7 @@ public:
 	void OnUpdateGameScore(int32 GameScore);
 	void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
 	void OnPlayerIdentityUpdate(EIdentityStatus Status);
+	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)

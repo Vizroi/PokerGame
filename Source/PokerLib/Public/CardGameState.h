@@ -58,6 +58,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
 	void RevealAllIdentiy();
 
+	UFUNCTION(BlueprintCallable, Category = "Team Action")
+	bool CheckAllPlayerIdentityStatusValid();
 
 	UFUNCTION(BlueprintCallable, Category = "Game Score")
 	void MultiplyGameScore();
@@ -70,6 +72,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Game Score")
 	int32 GetGameScore();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void SetCurrentPlayerIndex(int32 Index);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetCurrentPlayerIndex() {return CurrentPlayerIndex;}
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void MoveToNextPlayer();
 
 public:
 	//通过位运算的变量来知道当前哪个位置是空的
@@ -88,6 +99,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_GameScoreChange();
+
+	UFUNCTION()
+	void OnRep_CurrentPlayerIndexChange();
 	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange)
@@ -101,4 +115,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_GamePhaseChange)
 	EGamePhase  CurrentGamePhase = EGamePhase::WaitingForPlayers;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentPlayerIndexChange)
+	int32 CurrentPlayerIndex; // Current can play cards index
 };

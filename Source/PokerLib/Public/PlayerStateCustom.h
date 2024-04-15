@@ -106,6 +106,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Team Info")
     void SetIdentityStatus(EIdentityStatus Status);
+
+    UFUNCTION(BlueprintCallable, Category = "Team Info")
+    EIdentityStatus GetIdentityStatus() { return IdentityStatus; }
     
 
     UFUNCTION(BlueprintCallable, Category = "Score Info")
