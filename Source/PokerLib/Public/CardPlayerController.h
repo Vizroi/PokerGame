@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
 	void ClientPlayCards();
 
+	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
+	void ClientPassTurn();
+
 	UFUNCTION(BlueprintCallable, Category = "Game|Score Action")
 	void ClientRevealAllIdentiy(bool IsReveal);
 
@@ -69,6 +72,7 @@ public:
 	void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
 	void OnPlayerIdentityUpdate(EIdentityStatus Status);
 	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex);
+	void OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -78,7 +82,11 @@ protected:
 	void ServerPlayCards(const TArray<int32>& CardsId);
 
 	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPassTurn();
+
+	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRevealAllIdentiy(bool IsReveal);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI_GamePlayMenu")
 	TSubclassOf<UUIGameMainBase> GameMenuWidgetClass;
@@ -86,7 +94,4 @@ public:
 private:
 	UPROPERTY()
 	UUIGameMainBase* GameMenuWidget;
-
-	UPROPERTY()
-	TArray<FCard> LastCards;
 };

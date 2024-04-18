@@ -11,6 +11,8 @@ ACardGameState::ACardGameState()
 	GameScore = 0;
 	CurrentGamePhase = EGamePhase::WaitingForPlayers;
 	CurrentPlayerIndex = -1;
+	LastPlayerIndex = -1;
+	PlayerLastCards.Empty();
 }
 
 void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -22,6 +24,8 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACardGameState, RevealedPlayers);
 	DOREPLIFETIME(ACardGameState, CurrentGamePhase);
 	DOREPLIFETIME(ACardGameState, CurrentPlayerIndex);
+	DOREPLIFETIME(ACardGameState, LastPlayerIndex);
+	DOREPLIFETIME(ACardGameState, PlayerLastCards); 
 }
 
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
@@ -213,6 +217,8 @@ void ACardGameState::MoveToNextPlayer()
 		return;
 	}
 
+	LastPlayerIndex = CurrentPlayerIndex;
+
 	if (CurrentPlayerIndex < 0)
 	{
 		for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
@@ -230,12 +236,66 @@ void ACardGameState::MoveToNextPlayer()
 	}
 	else
 	{
-		CurrentPlayerIndex++;
-		if (CurrentPlayerIndex >= PlayerStateArray.Num())
+		if (CurrentPlayerIndex + 1 >= PlayerStateArray.Num())
 		{
 			CurrentPlayerIndex = 0;
 		}
+		else
+		{
+			CurrentPlayerIndex++;
+		}
 	}
+
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Server :               PlayerIndex: %d"), PlayerState->GetPlayerIndex());
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Server :               CurrentPlayerIndex: %d"), CurrentPlayerIndex);
+	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
+
+}
+
+void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards)
+{
+	if(!HasAuthority())
+	{
+		return;
+	}
+
+	bool bFound = false;
+	for (auto Elem : PlayerLastCards)
+	{
+		if(Elem.PlayerIndex == PlayerIndex)
+		{
+			bFound = true;
+			Elem.LastCards = LastCards;
+			break;
+		}
+	}
+
+	if (!bFound)
+	{
+		FLastCardSet LastCardSet;
+		LastCardSet.PlayerIndex = PlayerIndex;
+		LastCardSet.LastCards = LastCards;
+		PlayerLastCards.Add(LastCardSet);
+	}
+}
+
+TArray<FCard> ACardGameState::GetLastCardSetByPlayerIndex(int32 PlayerIndex)
+{
+	for (auto Elem : PlayerLastCards)
+	{
+		if (Elem.PlayerIndex == PlayerIndex)
+		{
+			return Elem.LastCards;
+		}
+	}
+	return TArray<FCard>();
 }
 
 void ACardGameState::OnRep_GamePhaseChange()
@@ -285,5 +345,24 @@ void ACardGameState::OnRep_CurrentPlayerIndexChange()
 	if (PC)
 	{
 		PC->OnCurrentPlayerIndexChange(CurrentPlayerIndex);
+	}
+
+
+	for(int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if(PlayerState)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Client:               PlayerIndex: %d"), PlayerState->GetPlayerIndex());
+		}
+	}
+}
+
+void ACardGameState::OnRep_PlayerLastCardsChange()
+{
+	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		//PC->OnPlayerLastCardsChange(CurrentPlayerIndex,)
 	}
 }

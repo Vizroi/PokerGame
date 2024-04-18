@@ -31,5 +31,5 @@ struct FCardSet
 
 	TArray<FCard> Cards;
 	ECardSetType Type = ECardSetType::Invalid;
-	ECardValue HighestValue = ECardValue::None;
+	FCard HighestCard = FCard();
 };

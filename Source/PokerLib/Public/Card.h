@@ -34,8 +34,8 @@ enum class ECardValue : uint8
 	J UMETA(DisplayName = "J"),
 	Q UMETA(DisplayName = "Q"),
 	K UMETA(DisplayName = "K"),
-	JokerA UMETA(DisplayName = "JokerA"),
-	JokerB UMETA(DisplayName = "JokerB")
+	JokerA = 99 UMETA(DisplayName = "JokerA"),
+	JokerB = 100 UMETA(DisplayName = "JokerB")
 };
 
 FString GetCardValueString(ECardValue Value)
@@ -93,7 +93,6 @@ struct FCardDataTable : public FTableRowBase
 	TSoftObjectPtr<UTexture2D> CardImage;
 };
 
-
 USTRUCT(BlueprintType)
 struct FCard
 {
@@ -102,6 +101,16 @@ struct FCard
 	FCard() : CardID(-1), Suit(ESuit::Spade), Value(ECardValue::None), bSelected(false){}
 
 	FCard(int32 InCardID, ESuit InSuit, ECardValue Invalue, bool InSelected) : CardID(InCardID), Suit(InSuit), Value(Invalue), bSelected(InSelected) {}
+
+	bool operator==(const FCard& Other) const
+	{
+		return Suit == Other.Suit && Value == Other.Value;
+	}
+
+	bool IsEmpty() const
+	{
+		return CardID == -1;
+	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Card")
 	int32 CardID;
@@ -117,3 +126,14 @@ struct FCard
 };
 
 
+USTRUCT(BlueprintType)
+struct FLastCardSet
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	int32 PlayerIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	TArray<FCard> LastCards;
+};

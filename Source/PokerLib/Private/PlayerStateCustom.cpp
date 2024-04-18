@@ -115,7 +115,7 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 
 void APlayerStateCustom::SortHandCards()
 {
-    URedTenCardFunctionLibrary::SortCards(HandCards);
+    URedTenCardFunctionLibrary::SortCardsForPriority(HandCards);
 }
 
 bool APlayerStateCustom::SelectCardToHand(int32 CardId)

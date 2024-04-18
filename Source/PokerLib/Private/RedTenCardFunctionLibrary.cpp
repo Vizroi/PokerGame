@@ -8,35 +8,43 @@ FCardSet URedTenCardFunctionLibrary::DetermineCardSetType(const TArray<FCard>& C
 {
 	FCardSet Result;
 	Result.Cards = Cards;
+	Result.HighestCard = FCard();
 
 	//根据卡牌数量来决定卡牌类型
 	if (IsTwoPairOfRedTen(Cards))
 	{
 		Result.Type = ECardSetType::RedTens;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
-	else if (IsBigBomb(Cards, Result.HighestValue))
+	else if (IsBigBomb(Cards))
 	{
 		Result.Type = ECardSetType::BigBomb;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
-	else if (IsBomb(Cards, Result.HighestValue))
+	else if (IsBomb(Cards))
 	{
 		Result.Type = ECardSetType::Bomb;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
-	else if (IsPair(Cards, Result.HighestValue))
+	else if (IsPair(Cards))
 	{
 		Result.Type = ECardSetType::Pair;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
-	else if (IsStraight(Cards, Result.HighestValue))
+	else if (IsStraight(Cards))
 	{
 		Result.Type = ECardSetType::Straight;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
-	else if (IsSingle(Cards, Result.HighestValue))
+	else if (IsSingle(Cards))
 	{
 		Result.Type = ECardSetType::Single;
+		Result.HighestCard = GetCardHighestCard(Cards);
 	}
 	else if (Cards.Num() == 0)
 	{
 		Result.Type = ECardSetType::Empty;
+		Result.HighestCard = FCard();
 	}
 	else
 	{
@@ -46,26 +54,38 @@ FCardSet URedTenCardFunctionLibrary::DetermineCardSetType(const TArray<FCard>& C
 	return Result;
 }
 
-bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, const TArray<FCard>& LastCards)
+bool URedTenCardFunctionLibrary::CompareCards(const TArray<FCard>& CurrentCards, const TArray<FCard>& LastCards)
 {
 	FCardSet CurrentCardSet = DetermineCardSetType(CurrentCards);
-	FCardSet PlayerCardSet = DetermineCardSetType(LastCards);
+	FCardSet LastCardsSet = DetermineCardSetType(LastCards);
 
 	if (CurrentCardSet.Type == ECardSetType::Invalid || CurrentCardSet.Type == ECardSetType::Empty)
 	{
 		return false;
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::RedTens)
+	if (LastCardsSet.Type == ECardSetType::Empty)
+	{
+		return true;
+	}
+
+	if (LastCardsSet.Type == ECardSetType::RedTens)
 	{
 		return false;
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::BigBomb)
+	if (LastCardsSet.Type == ECardSetType::BigBomb)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb)
 		{
-			return CurrentCardSet.HighestValue > PlayerCardSet.HighestValue;
+			if (CompareCardsPriority(CurrentCardSet.HighestCard, LastCardsSet.HighestCard) || CurrentCards.Num() > LastCards.Num())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		else
 		{
@@ -73,7 +93,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::Bomb)
+	if (LastCardsSet.Type == ECardSetType::Bomb)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb)
 		{
@@ -81,7 +101,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 		else if (CurrentCardSet.Type == ECardSetType::Bomb)
 		{
-			return CurrentCardSet.HighestValue > PlayerCardSet.HighestValue;
+			return CompareCardsPriority(CurrentCardSet.HighestCard, LastCardsSet.HighestCard);
 		}
 		else
 		{
@@ -89,7 +109,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::Pair)
+	if (LastCardsSet.Type == ECardSetType::Pair)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb || CurrentCardSet.Type == ECardSetType::Bomb)
 		{
@@ -97,7 +117,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 		else if (CurrentCardSet.Type == ECardSetType::Pair)
 		{
-			return CurrentCardSet.HighestValue > PlayerCardSet.HighestValue;
+			return CompareCardsPriority(CurrentCardSet.HighestCard, LastCardsSet.HighestCard);
 		}
 		else
 		{
@@ -105,15 +125,15 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::Straight)
+	if (LastCardsSet.Type == ECardSetType::Straight)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb || CurrentCardSet.Type == ECardSetType::Bomb)
 		{
 			return true;
 		}
-		else if (CurrentCardSet.Type == ECardSetType::Straight)
+		else if (CurrentCardSet.Type == ECardSetType::Straight && CurrentCards.Num() == LastCards.Num())
 		{
-			return CurrentCardSet.HighestValue > PlayerCardSet.HighestValue;
+			return CompareCardsPriority(CurrentCardSet.HighestCard, LastCardsSet.HighestCard);
 		}
 		else
 		{
@@ -121,7 +141,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::Single)
+	if (LastCardsSet.Type == ECardSetType::Single)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb || CurrentCardSet.Type == ECardSetType::Bomb)
 		{
@@ -129,7 +149,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 		else if (CurrentCardSet.Type == ECardSetType::Single)
 		{
-			return CurrentCardSet.HighestValue > PlayerCardSet.HighestValue;
+			return CompareCardsPriority(CurrentCardSet.HighestCard, LastCardsSet.HighestCard);
 		}
 		else
 		{
@@ -137,31 +157,7 @@ bool URedTenCardFunctionLibrary::CanPlayCard(const TArray<FCard>& CurrentCards, 
 		}
 	}
 
-	if (PlayerCardSet.Type == ECardSetType::Empty)
-	{
-		return true;
-	}
-
-
 	return false;
-}
-
-void URedTenCardFunctionLibrary::CountCards(const TArray<FCard>& Cards, TMap<ECardValue, int32>& CardCounts, int32& JokerCount)
-{
-	CardCounts.Empty();
-	JokerCount = 0;
-
-	for (const FCard& Card : Cards)
-	{
-		if (IsJoker(Card))
-		{
-			++JokerCount;
-		}
-		else
-		{
-			CardCounts.FindOrAdd(Card.Value)++;
-		}
-	}
 }
 
 bool URedTenCardFunctionLibrary::IsTwoPairOfRedTen(const TArray<FCard>& Cards)
@@ -180,174 +176,137 @@ bool URedTenCardFunctionLibrary::IsTwoPairOfRedTen(const TArray<FCard>& Cards)
 	return false;
 }
 
-bool URedTenCardFunctionLibrary::IsBigBomb(const TArray<FCard>& Cards, ECardValue& HightestValue)
+bool URedTenCardFunctionLibrary::IsRedTen(const FCard& Card)
 {
-	TMap<ECardValue, int32> CardCounts;
-	int32 JokerCount = 0;
-	CountCards(Cards, CardCounts, JokerCount);
-
-	for (const TPair<ECardValue, int32>& Pair : CardCounts)
+	if(Card.Suit == ESuit::Heart && Card.Value == ECardValue::Ten)
 	{
-		if (Pair.Value + JokerCount >= 4)
-		{
-			HightestValue = Pair.Key;
-			return true;
-		}
+		return true;
 	}
-
+	else if (Card.Suit == ESuit::Diamond && Card.Value == ECardValue::Ten)
+	{
+		return true;
+	}
 	return false;
 }
 
-bool URedTenCardFunctionLibrary::IsBomb(const TArray<FCard>& Cards, ECardValue& HightestValue)
+bool URedTenCardFunctionLibrary::IsCardsUniformSet(const TArray<FCard>& Cards, int32 RequiredBombCount)
 {
-	if (Cards.Num() != 3)
+	if (Cards.Num() < RequiredBombCount)
 	{
 		return false;
 	}
 
-	TMap<ECardValue, int32> CardCounts;
-	int32 JokerCount = 0;
-	CountCards(Cards, CardCounts, JokerCount);
-
-	for (const TPair<ECardValue, int32>& Pair : CardCounts)
+	FCard ReferenceCard;
+	for (int32 i = 0; i < Cards.Num(); ++i)
 	{
-		if (Pair.Value + JokerCount == 3)
+		if (ReferenceCard.IsEmpty() && !IsJoker(Cards[i]))
 		{
-			HightestValue = Pair.Key;
-			return true;
+			ReferenceCard = Cards[i];
+		}
+		else
+		{
+			if ((ReferenceCard.Value == Cards[i].Value && !IsRedTen(Cards[i])) 
+											|| IsJoker(Cards[i]))
+			{
+				continue;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
-
-	return false;
+	return true;
 }
 
-bool URedTenCardFunctionLibrary::IsPair(const TArray<FCard>& Cards, ECardValue& HightestValue)
+bool URedTenCardFunctionLibrary::IsBigBomb(const TArray<FCard>& Cards)
 {
-	if (Cards.Num() != 2)
-	{
-		return false;
-	}
-
-	TMap<ECardValue, int32> CardCounts;
-	int32 JokerCount = 0;
-	CountCards(Cards, CardCounts, JokerCount);
-
-	for (const TPair<ECardValue, int32>& Pair : CardCounts)
-	{
-		if (Pair.Value + JokerCount == 2)
-		{
-			HightestValue = Pair.Key;
-			return true;
-		}
-	}
-
-	return false;
+	return IsCardsUniformSet(Cards, 4);
 }
 
-bool URedTenCardFunctionLibrary::IsStraight(const TArray<FCard>& Cards, ECardValue& HightestValue)
+bool URedTenCardFunctionLibrary::IsBomb(const TArray<FCard>& Cards)
+{
+	return IsCardsUniformSet(Cards, 3);
+}
+
+bool URedTenCardFunctionLibrary::IsPair(const TArray<FCard>& Cards)
+{
+	return IsCardsUniformSet(Cards, 2);
+}
+
+bool URedTenCardFunctionLibrary::IsStraight(const TArray<FCard>& Cards)
 {
 	if (Cards.Num() < 3)
 	{
 		return false;
 	}
-	else
+
+	for (auto Elem : Cards)
 	{
-		return true;
-	}
-
-	// 用于计数每个牌值的数量，癞子另外计数
-	TMap<ECardValue, int32> CardCounts;
-	int32 JokerCount = 0;
-
-	for (const FCard& Card : Cards)
-	{
-		if (IsJoker(Card))
-		{
-			JokerCount++;
-		}
-		else
-		{
-			// 排除红桃10和方片10，以及2
-			if (Card.Value != ECardValue::Ten || Card.Value != ECardValue::Two)
-			{
-				CardCounts.FindOrAdd(Card.Value)++;
-			}
-		}
-	}
-
-	// 将牌值排序，以检查连续性
-	TArray<ECardValue> SortedValues;
-	CardCounts.GetKeys(SortedValues);
-	SortedValues.Sort();
-	//SortedValues.Sort([](const FCard& A, const FCard& B)
-	//	{
-	//		// 鬼牌作为最小
-	//		if (A.Suit == ESuit::Joker) return true;
-	//		if (B.Suit == ESuit::Joker) return false;
-
-	//		// 对10进行特殊处理
-	//		if (A.Value == ECardValue::Ten && (A.Suit == ESuit::Heart || A.Suit == ESuit::Diamond)) return false;
-	//		if (B.Value == ECardValue::Ten && (B.Suit == ESuit::Heart || B.Suit == ESuit::Diamond)) return true;
-
-	//		// 正常牌值排序，2和10（红桃、方片）作为最大
-	//		int32 AValue = (A.Value == ECardValue::Two) ? static_cast<int32>(ECardValue::Ace) + 2 : static_cast<int32>(A.Value);
-	//		int32 BValue = (B.Value == ECardValue::Two) ? static_cast<int32>(ECardValue::Ace) + 2 : static_cast<int32>(B.Value);
-
-	//		// 正常排序，但将2和特殊的10置于末尾
-	//		if (A.Value != ECardValue::Ten && B.Value == ECardValue::Ten && (B.Suit == ESuit::Heart || B.Suit == ESuit::Diamond))
-	//		{
-	//			return AValue < BValue + 1;
-	//		}
-	//		else if (A.Value == ECardValue::Ten && (A.Suit == ESuit::Heart || A.Suit == ESuit::Diamond) && B.Value != ECardValue::Ten)
-	//		{
-	//			return AValue + 1 < BValue;
-	//		}
-
-	//		return AValue < BValue;
-	//	});
-
-	int32 MissingCards = 0;
-	int32 LastValue = static_cast<int32>(SortedValues[0]);
-
-	// 特殊处理，允许QKA顺子
-	if (SortedValues.Contains(ECardValue::Q) &&
-		SortedValues.Contains(ECardValue::K) &&
-		SortedValues.Contains(ECardValue::Ace))
-	{
-		return true;
-	}
-
-	for (int32 i = 1; i < SortedValues.Num(); i++)
-	{
-		// 计算缺失的牌数来判断是否能用癞子填补形成顺子
-		int CurrentValue = static_cast<int32>(SortedValues[i]);
-		int Gap = CurrentValue - LastValue - 1;
-		MissingCards += FMath::Max(0, Gap);
-
-		LastValue = CurrentValue;
-
-		// 如果缺失的牌数已经超过了癞子的数量，则不能形成顺子
-		if (MissingCards > JokerCount)
+		if (IsRedTen(Elem))
 		{
 			return false;
 		}
 	}
 
-	// TODO: 没有返回顺子中的最高值
+	TArray<FCard> SortedValues = Cards;
+	SortCardsForStraightPriority(SortedValues);
 
-	return true;
+	int32 JokerCount = 0;
+	int32 LastValue = -1;
+	int32 Gaps = 0;
+
+	for (const FCard& Card : SortedValues)
+	{
+		if (IsJoker(Card))
+		{
+			JokerCount++;
+			continue;
+		}
+
+		int CurrentValue = GetCardStraightPriority(Card);
+		if (LastValue != -1)
+		{
+			int Gap = CurrentValue - LastValue - 1;
+			if (Gap > 0)
+			{
+				Gaps += Gap;
+			}
+		}
+
+		LastValue = CurrentValue;
+	}
+
+	return JokerCount >= Gaps;
 }
 
-bool URedTenCardFunctionLibrary::IsSingle(const TArray<FCard>& Cards, ECardValue& HightestValue)
+bool URedTenCardFunctionLibrary::IsSingle(const TArray<FCard>& Cards)
 {
 	if (Cards.Num() != 1)
 	{
 		return false;
 	}
 
-	HightestValue = Cards[0].Value;
-
 	return true;
+}
+
+FCard URedTenCardFunctionLibrary::GetCardHighestCard(const TArray<FCard>& Cards)
+{
+	if (Cards.IsEmpty())
+	{
+		return FCard();
+	}
+
+	FCard HighestCard = Cards[0];
+	for(const FCard& Card : Cards)
+	{
+		if (GetCardPriority(Card) > GetCardPriority(HighestCard))
+		{
+			HighestCard = Card;
+		}
+	}
+
+	return HighestCard;
 }
 
 int32 URedTenCardFunctionLibrary::GetCardPriority(const FCard& Card)
@@ -379,10 +338,49 @@ int32 URedTenCardFunctionLibrary::GetCardPriority(const FCard& Card)
 	if (Card.Value == ECardValue::JokerB)
 		return 13;
 
-	return 14; // 默认优先级，用于处理未知的牌
+	return 99;
 }
 
-int32 URedTenCardFunctionLibrary::SortCards(TArray<FCard>& Cards)
+int32 URedTenCardFunctionLibrary::GetCardStraightPriority(const FCard& Card)
+{
+	if (Card.Value == ECardValue::Six)
+		return 1;
+	if (Card.Value == ECardValue::Seven)
+		return 2;
+	if (Card.Value == ECardValue::Eight)
+		return 3;
+	if (Card.Value == ECardValue::Nine)
+		return 4;
+	if (Card.Value == ECardValue::Ten && (Card.Suit != ESuit::Heart || Card.Suit != ESuit::Diamond))
+		return 5;
+	if (Card.Value == ECardValue::J)
+		return 6;
+	if (Card.Value == ECardValue::Q)
+		return 7;
+	if (Card.Value == ECardValue::K)
+		return 8;
+	if (Card.Value == ECardValue::Ace)
+		return 9;
+
+	return -1;
+}
+
+bool URedTenCardFunctionLibrary::CompareCardsPriority(const FCard& Card1, const FCard& Card2)
+{
+	if (GetCardPriority(Card1) < GetCardPriority(Card2))
+	{
+		return true;
+	}
+	/*
+	else if (GetCardPriority(Card1) == GetCardPriority(Card2))
+	{
+		return static_cast<int32>(Card1.Suit) > static_cast<int32>(Card2.Suit);
+	}
+	*/
+	return false;
+}
+
+int32 URedTenCardFunctionLibrary::SortCardsForPriority(TArray<FCard>& Cards)
 {
 	if (Cards.Num() > 1)
 	{
@@ -401,29 +399,22 @@ int32 URedTenCardFunctionLibrary::SortCards(TArray<FCard>& Cards)
 	return int32();
 }
 
-bool URedTenCardFunctionLibrary::CustomRedTenCardSort(const FCard& A, const FCard& B)
+int32 URedTenCardFunctionLibrary::SortCardsForStraightPriority(TArray<FCard>& Cards)
 {
-	// 鬼牌作为最小
-	if (A.Suit == ESuit::Joker) return true;
-	if (B.Suit == ESuit::Joker) return false;
-
-	// 对10进行特殊处理
-	if (A.Value == ECardValue::Ten && (A.Suit == ESuit::Heart || A.Suit == ESuit::Diamond)) return false;
-	if (B.Value == ECardValue::Ten && (B.Suit == ESuit::Heart || B.Suit == ESuit::Diamond)) return true;
-
-	// 正常牌值排序，2和10（红桃、方片）作为最大
-	int32 AValue = (A.Value == ECardValue::Two) ? static_cast<int32>(ECardValue::Ace) + 2 : static_cast<int32>(A.Value);
-	int32 BValue = (B.Value == ECardValue::Two) ? static_cast<int32>(ECardValue::Ace) + 2 : static_cast<int32>(B.Value);
-
-	// 正常排序，但将2和特殊的10置于末尾
-	if (A.Value != ECardValue::Ten && B.Value == ECardValue::Ten && (B.Suit == ESuit::Heart || B.Suit == ESuit::Diamond))
+	if (Cards.Num() > 1)
 	{
-		return AValue < BValue + 1;
-	}
-	else if (A.Value == ECardValue::Ten && (A.Suit == ESuit::Heart || A.Suit == ESuit::Diamond) && B.Value != ECardValue::Ten)
-	{
-		return AValue + 1 < BValue;
-	}
+		Cards.Sort([](const FCard& A, const FCard& B)
+			{
+				int32 PriorityA = GetCardStraightPriority(A);
+				int32 PriorityB = GetCardStraightPriority(B);
+				if (PriorityA != PriorityB)
+				{
+					return PriorityA < PriorityB;
+				}
 
-	return AValue < BValue;
+				return static_cast<int32>(A.Suit) < static_cast<int32>(B.Suit);
+			});
+	}
+	return int32();
 }
+

@@ -80,7 +80,16 @@ public:
 	int32 GetCurrentPlayerIndex() {return CurrentPlayerIndex;}
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetLastPlayerIndex() { return LastPlayerIndex; }
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void MoveToNextPlayer();
+
+	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
+	void AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards);
+
+	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
+	TArray<FCard> GetLastCardSetByPlayerIndex(int32 PlayerIndex);
 
 public:
 	//通过位运算的变量来知道当前哪个位置是空的
@@ -102,6 +111,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_CurrentPlayerIndexChange();
+
+	UFUNCTION()
+	void OnRep_PlayerLastCardsChange();
 	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange)
@@ -118,4 +130,10 @@ protected:
 
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentPlayerIndexChange)
 	int32 CurrentPlayerIndex; // Current can play cards index
+
+	UPROPERTY(Replicated)
+	int32 LastPlayerIndex = -1;
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerLastCardsChange)
+	TArray<FLastCardSet> PlayerLastCards;
 };

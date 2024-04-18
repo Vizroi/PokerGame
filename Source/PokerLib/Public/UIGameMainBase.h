@@ -62,4 +62,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnSelectCard();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);
 };

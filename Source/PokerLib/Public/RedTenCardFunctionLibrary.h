@@ -21,43 +21,57 @@ public:
 	static FCardSet DetermineCardSetType(const TArray<FCard>& Cards);
 
 	UFUNCTION(BlueprintCallable, Category = "CardSet Functions")
-	static bool CanPlayCard(const TArray<FCard>& CurrentCards, const TArray<FCard>& LastCards);
+	static bool CompareCards(const TArray<FCard>& CurrentCards, const TArray<FCard>& LastCards);
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static void CountCards(const TArray<FCard>& Cards, TMap<ECardValue, int32>& CardCounts, int32& JokerCount);
 
 	//check is two pair of red ten
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
 	static bool IsTwoPairOfRedTen(const TArray<FCard>& Cards);
 
+	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
+	static bool IsRedTen(const FCard& Card);
+
+	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
+	static bool IsCardsUniformSet(const TArray<FCard>& Cards, int32 RequiredBombCount);
+
 	//check is bigbomb
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static bool IsBigBomb(const TArray<FCard>& Cards, ECardValue& HightestValue);
+	static bool IsBigBomb(const TArray<FCard>& Cards);
 	//check is bomb
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static bool IsBomb(const TArray<FCard>& Cards, ECardValue& HightestValue);
+	static bool IsBomb(const TArray<FCard>& Cards);
 
 	//check is pair
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static bool IsPair(const TArray<FCard>& Cards, ECardValue& HightestValue);
+	static bool IsPair(const TArray<FCard>& Cards);
 
 	//check is straight
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static bool IsStraight(const TArray<FCard>& Cards, ECardValue& HightestValue);
+	static bool IsStraight(const TArray<FCard>& Cards);
 
 	//check is single
 	UFUNCTION(BlueprintCallable, Category = "CardSet Check Result")
-	static bool IsSingle(const TArray<FCard>& Cards, ECardValue& HightestValue);
+	static bool IsSingle(const TArray<FCard>& Cards);
 
-	//get card priority
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static FCard GetCardHighestCard(const TArray<FCard>& Cards);
+
 	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
 	static int32 GetCardPriority(const FCard& Card);
 
-	//sort cards
-	UFUNCTION(BlueprintCallable, Category = "Cards Sort")
-	static int32 SortCards(TArray<FCard>& Cards);
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static int32 GetCardStraightPriority(const FCard& Card);
 
-private:
-	bool CustomRedTenCardSort(const FCard& A, const FCard& B);
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static bool CompareCardsPriority(const FCard& Card1, const FCard& Card2);
+
+	UFUNCTION(BlueprintCallable, Category = "Cards Sort")
+	static int32 SortCardsForPriority(TArray<FCard>& Cards);
+
+	UFUNCTION(BlueprintCallable, Category = "Cards Sort")
+	static int32 SortCardsForStraightPriority(TArray<FCard>& Cards);
+
+
+
 };

@@ -13,7 +13,6 @@ ACardPlayerController::ACardPlayerController()
 	bEnableClickEvents = true;
 	bEnableTouchEvents = true;
 	DefaultMouseCursor = EMouseCursor::Default;
-	LastCards.Empty();
 }
 
 void ACardPlayerController::JoinGame(const FString& ServerAddress)
@@ -109,12 +108,25 @@ bool ACardPlayerController::IsCanPlayCardsInHand()
 
 bool ACardPlayerController::CheckPlayCards(const TArray<int32>& CardId)
 {
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::CheckPlayCards: GameState is NULL!"));
+		return false;
+
+	}
+
+	if (GS->GetCurrentPlayerIndex() == GS->GetLastPlayerIndex())
+	{
+		return true;
+	}
+
 	TArray<FCard> CurCards = GetCardsByID(CardId);
-	bool IsCanPlayCard = URedTenCardFunctionLibrary::CanPlayCard(CurCards, LastCards);
+	TArray<FCard> LastCards = GS->GetLastCardSetByPlayerIndex(GS->GetLastPlayerIndex());
+	bool IsCanPlayCard = URedTenCardFunctionLibrary::CompareCards(CurCards, LastCards);
 
 	return IsCanPlayCard;
 }
-
 
 void ACardPlayerController::SortHandCards()
 {
@@ -169,6 +181,28 @@ void ACardPlayerController::ClientPlayCards()
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::PlayCards: Can't play the cards!"));
+		}
+	}
+}
+
+void ACardPlayerController::ClientPassTurn()
+{
+	if (IsLocalController())
+	{
+		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+		if (!PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientPassTurn: PlayerState is NULL!"));
+		}
+
+		TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
+		if (CardsIdArray.Num() < 1)
+		{
+			ServerPassTurn();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientPassTurn: Can't pass the turn!"));
 		}
 	}
 }
@@ -327,13 +361,24 @@ void ACardPlayerController::OnPlayerIdentityUpdate(EIdentityStatus Status)
 
 void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex)
 {
-if (!GameMenuWidget)
+	if (!GameMenuWidget)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerIndexReceived: GameMenuWidget is NULL!"));
 		return;
 	}
 
 	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex);
+}
+
+void ACardPlayerController::OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerLastCardsChange: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnLastCardsChange(PlayerIndex, Cards);
 }
 
 void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
@@ -409,6 +454,14 @@ void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& 
 		return;
 	}
 
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPlayCards: GameState is NULL!"));
+		return;
+	
+	}
+
 	if (!CheckPlayCards(CardsId))
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPlayCards: Can't Try Play Cards"));
@@ -416,15 +469,46 @@ void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& 
 	}
 	else
 	{
-		LastCards.Empty();
-		LastCards = GetCardsByID(CardsId);
+		TArray<FCard> LastCards = GetCardsByID(CardsId);
+		GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
+
 
 		PS->PrintHandsCardsInfo("ServerPlayCards: ");
 		PS->RemoveCardToHandFormCardId(CardsId);
+
+		GS->MoveToNextPlayer();
 	}
 }
 
 bool ACardPlayerController::ServerPlayCards_Validate(const TArray<int32>& CardsId)
+{
+	return true;
+}
+
+void ACardPlayerController::ServerPassTurn_Implementation()
+{
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPassTurn: PlayerState is NULL!"));
+		return;
+	}
+
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPassTurn: GameState is NULL!"));
+		return;
+
+	}
+
+	TArray<FCard> LastCards;
+	GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
+	PS->PrintHandsCardsInfo("ServerPassTurn: ");
+	GS->MoveToNextPlayer();
+}
+
+bool ACardPlayerController::ServerPassTurn_Validate()
 {
 	return true;
 }
