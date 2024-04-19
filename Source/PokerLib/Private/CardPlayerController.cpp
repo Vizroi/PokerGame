@@ -101,7 +101,7 @@ bool ACardPlayerController::IsCanPlayCardsInHand()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: Can't play the cards!"));
+		UE_LOG(LogTemp, Warning , TEXT("ACardPlayerController::IsCanPlayCardsInHand: Can't play the cards!"));
 		return false;
 	}
 }
@@ -140,23 +140,15 @@ void ACardPlayerController::SortHandCards()
 	}
 }
 
-bool ACardPlayerController::SelectCard(int32 CardId)
+void ACardPlayerController::ClientSelectCard(int32 CardId)
 {
 	if (IsLocalController())
 	{
-		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
-		if (PS != NULL)
+		if (IsCardInHand(CardId))
 		{
-			bool IsSelected = PS->SelectCardToHand(CardId);
-			if (GameMenuWidget)
-			{
-				GameMenuWidget->OnSelectCard();
-			}
-
-			return IsSelected;
+			ServerSelectCard(CardId);
 		}
 	}
-	return false;
 }
 
 void ACardPlayerController::ClientPlayCards()
@@ -176,7 +168,6 @@ void ACardPlayerController::ClientPlayCards()
 			ServerPlayCards(CardsIdArray);
 
 			PS->PrintHandsCardsInfo("ClientPlayCards: ");
-			PS->PrintSelectedCardsInfo("ClientPlayCards: ");
 		}
 		else
 		{
@@ -210,6 +201,17 @@ void ACardPlayerController::ClientPassTurn()
 void ACardPlayerController::ClientRevealAllIdentiy(bool IsReveal)
 {
 	ServerRevealAllIdentiy(IsReveal);
+}
+
+void ACardPlayerController::ClientUpdateSelectCardToHand_Implementation(int32 CardId, bool IsSelected, bool IsCanPlay)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientUpdateSelectCardToHand: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnSelectCard(CardId, IsSelected, IsCanPlay);
 }
 
 void ACardPlayerController::OnGamePhaseChange(EGamePhase CurGamePhase)
@@ -441,6 +443,23 @@ void ACardPlayerController::ServerSetPlayerReady_Implementation()
 }
 
 bool ACardPlayerController::ServerSetPlayerReady_Validate()
+{
+	return true;
+}
+
+void ACardPlayerController::ServerSelectCard_Implementation(int32 CardId)
+{
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (PS != NULL)
+	{
+		bool IsSelect = PS->SelectCardToHand(CardId);
+		bool IsCanPlay = IsCanPlayCardsInHand();
+		ClientUpdateSelectCardToHand(CardId, IsSelect, IsCanPlay);
+		PS->PrintSelectedCardsInfo("ServerSelectCard : ");
+	}
+}
+
+bool ACardPlayerController::ServerSelectCard_Validate(int32 CardId)
 {
 	return true;
 }

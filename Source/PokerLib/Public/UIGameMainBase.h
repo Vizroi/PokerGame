@@ -60,7 +60,7 @@ public:
 
 	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
-		void OnSelectCard();
+		void OnSelectCard(int32 CardId, bool IsSelected, bool IsCanPlay);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);

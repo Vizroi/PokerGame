@@ -93,7 +93,7 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 {
     if (GetLocalRole() == ROLE_Authority)
 	{
-        PrintHandsCardsInfo("Before RemoveCardToHandFromCardId: ");
+        //PrintHandsCardsInfo("Before RemoveCardToHandFromCardId: ");
 
 		for(int32 i = 0; i < CardId.Num(); i++)
 		{
@@ -109,7 +109,7 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 		}
 		UpdateCardsCount();
 
-        PrintHandsCardsInfo("After RemoveCardToHandFromCardId: ");
+        //PrintHandsCardsInfo("After RemoveCardToHandFromCardId: ");
 	}
 }
 
@@ -120,17 +120,19 @@ void APlayerStateCustom::SortHandCards()
 
 bool APlayerStateCustom::SelectCardToHand(int32 CardId)
 {
-    bool IsSelected = false;
-    for (FCard& Card : HandCards)
-    {
-        if (Card.CardID == CardId)
-        {
-            Card.bSelected = !Card.bSelected;
-            IsSelected = Card.bSelected;
-            break;
-        }
-    }
-    return IsSelected;
+    bool IsSelect = false;
+    if (GetLocalRole() == ROLE_Authority)
+	{
+		for (FCard& Card : HandCards)
+		{
+			if (Card.CardID == CardId)
+			{
+				Card.bSelected = !Card.bSelected;
+                IsSelect = Card.bSelected;
+			}
+		}
+	}
+    return IsSelect;
 }
 
 TArray<int32> APlayerStateCustom::GetAllCardID()

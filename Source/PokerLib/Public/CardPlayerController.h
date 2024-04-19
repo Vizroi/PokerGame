@@ -49,7 +49,7 @@ public:
 	void SortHandCards();
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
-	bool SelectCard(int32 CardId);
+	void ClientSelectCard(int32 CardId);
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Card Action")
 	void ClientPlayCards();
@@ -59,6 +59,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Game|Score Action")
 	void ClientRevealAllIdentiy(bool IsReveal);
+
+public:
+	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
+	void ClientUpdateSelectCardToHand(int32 CardId, bool IsSelected, bool IsCanPlay);
+
 
 public:
 	void OnGamePhaseChange(EGamePhase CurGamePhase);
@@ -77,6 +82,9 @@ public:
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetPlayerReady();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSelectCard(int32 CardId);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPlayCards(const TArray<int32>& CardsId);
