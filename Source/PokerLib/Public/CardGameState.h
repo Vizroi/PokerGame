@@ -79,8 +79,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	int32 GetCurrentPlayerIndex() {return CurrentPlayerIndex;}
 
+	//last play cards palyer 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	int32 GetLastPlayerIndex() { return LastPlayerIndex; }
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetLastPlayCardsPlayerIndex() { return LastPlayCardsPlayerIndex; }
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void MoveToNextPlayer();
@@ -133,6 +137,9 @@ protected:
 
 	UPROPERTY(Replicated)
 	int32 LastPlayerIndex = -1;
+
+	UPROPERTY(Replicated)
+	int32 LastPlayCardsPlayerIndex = -1;
 
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerLastCardsChange)
 	TArray<FLastCardSet> PlayerLastCards;

@@ -135,6 +135,17 @@ bool APlayerStateCustom::SelectCardToHand(int32 CardId)
     return IsSelect;
 }
 
+void APlayerStateCustom::ClearSelectedCards()
+{
+    if (GetLocalRole() == ROLE_Authority)
+    {
+        for (FCard& Card : HandCards)
+		{
+			Card.bSelected = false;
+		}
+	}
+}
+
 TArray<int32> APlayerStateCustom::GetAllCardID()
 {
     TArray<int32> CardIDArray;

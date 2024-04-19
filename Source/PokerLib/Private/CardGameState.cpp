@@ -12,6 +12,7 @@ ACardGameState::ACardGameState()
 	CurrentGamePhase = EGamePhase::WaitingForPlayers;
 	CurrentPlayerIndex = -1;
 	LastPlayerIndex = -1;
+	LastPlayCardsPlayerIndex = -1;
 	PlayerLastCards.Empty();
 }
 
@@ -25,7 +26,8 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACardGameState, CurrentGamePhase);
 	DOREPLIFETIME(ACardGameState, CurrentPlayerIndex);
 	DOREPLIFETIME(ACardGameState, LastPlayerIndex);
-	DOREPLIFETIME(ACardGameState, PlayerLastCards); 
+	DOREPLIFETIME(ACardGameState, PlayerLastCards);
+	DOREPLIFETIME(ACardGameState, LastPlayCardsPlayerIndex);
 }
 
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
@@ -246,17 +248,9 @@ void ACardGameState::MoveToNextPlayer()
 		}
 	}
 
-	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
-	{
-		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
-		if (PlayerState)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Server :               PlayerIndex: %d"), PlayerState->GetPlayerIndex());
-		}
-	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Server :               CurrentPlayerIndex: %d"), CurrentPlayerIndex);
 	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
-
 }
 
 void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards)
@@ -283,6 +277,11 @@ void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& Last
 		LastCardSet.PlayerIndex = PlayerIndex;
 		LastCardSet.LastCards = LastCards;
 		PlayerLastCards.Add(LastCardSet);
+	}
+
+	if (LastCards.Num() > 0)
+	{
+		LastPlayCardsPlayerIndex = PlayerIndex;
 	}
 }
 

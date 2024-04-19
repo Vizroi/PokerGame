@@ -77,6 +77,9 @@ public:
     bool SelectCardToHand(int32 CardId);
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void ClearSelectedCards();
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
     TArray<int32> GetAllCardID();
 
     UFUNCTION(BlueprintCallable, Category = "Card Game")

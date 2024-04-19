@@ -116,13 +116,8 @@ bool ACardPlayerController::CheckPlayCards(const TArray<int32>& CardId)
 
 	}
 
-	if (GS->GetCurrentPlayerIndex() == GS->GetLastPlayerIndex())
-	{
-		return true;
-	}
-
 	TArray<FCard> CurCards = GetCardsByID(CardId);
-	TArray<FCard> LastCards = GS->GetLastCardSetByPlayerIndex(GS->GetLastPlayerIndex());
+	TArray<FCard> LastCards = GS->GetLastCardSetByPlayerIndex(GS->GetLastPlayCardsPlayerIndex());
 	bool IsCanPlayCard = URedTenCardFunctionLibrary::CompareCards(CurCards, LastCards);
 
 	return IsCanPlayCard;
@@ -180,21 +175,7 @@ void ACardPlayerController::ClientPassTurn()
 {
 	if (IsLocalController())
 	{
-		APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
-		if (!PS)
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientPassTurn: PlayerState is NULL!"));
-		}
-
-		TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
-		if (CardsIdArray.Num() < 1)
-		{
-			ServerPassTurn();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientPassTurn: Can't pass the turn!"));
-		}
+		ServerPassTurn();
 	}
 }
 
@@ -523,6 +504,7 @@ void ACardPlayerController::ServerPassTurn_Implementation()
 
 	TArray<FCard> LastCards;
 	GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
+	PS->ClearSelectedCards();
 	PS->PrintHandsCardsInfo("ServerPassTurn: ");
 	GS->MoveToNextPlayer();
 }
