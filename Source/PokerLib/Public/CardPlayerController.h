@@ -78,6 +78,8 @@ public:
 	void OnPlayerIdentityUpdate(EIdentityStatus Status);
 	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue);
 	void OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);
+	void OnPlayerScoreChange(int32 Score);
+	void OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)

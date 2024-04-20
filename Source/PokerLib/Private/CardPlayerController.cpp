@@ -381,6 +381,28 @@ void ACardPlayerController::OnPlayerLastCardsChange(int32 PlayerIndex, const TAr
 	GameMenuWidget->OnLastCardsChange(PlayerIndex, Cards);
 }
 
+void ACardPlayerController::OnPlayerScoreChange(int32 Score)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerScoreChange: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnPlayerScoreChange(Score);
+}
+
+void ACardPlayerController::OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnPlayerGameOverChange: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnPlayerGameOverChange(PlayerIndex, Type);
+}
+
 void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 {
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
@@ -402,6 +424,7 @@ void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 		if (IsReveal)
 		{
 			GS->RevealAllIdentiy();
+			GS->MultiplyGameScore();
 		}
 
 		bool IsAllPlayerStatusValid = GS->CheckAllPlayerIdentityStatusValid();

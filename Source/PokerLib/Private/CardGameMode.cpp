@@ -99,6 +99,7 @@ void ACardGameMode::StartGame()
 void ACardGameMode::ReStartGame()
 {
 	bGameStarted = true;
+	FinshiPlayers.Empty();
 	InitializeCards(EDeckMode::RedTen);
 	DealCardsToPlayers();
 	AssignTeams();
@@ -145,5 +146,159 @@ void ACardGameMode::ReSetGameScore()
 	if (CardGameState)
 	{
 		CardGameState->ResetGameScore();
+	}
+}
+
+void ACardGameMode::OnPlayerFinishPlayCards(int32 PlayerIndex)
+{
+	if (FinshiPlayers.Contains(PlayerIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player %d has already finished playing cards"), PlayerIndex)
+		return;
+	}
+
+
+	FinshiPlayers.Add(PlayerIndex);
+	if (CheckGameOver())
+	{
+		EndGame();
+	}
+}
+
+bool ACardGameMode::CheckGameOver()
+{
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (!CardGameState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No CardGameState found"));
+		return false;
+	}
+
+	bool IsGameOver = false;
+
+	if (FinshiPlayers.Num() == 1)
+	{
+		ETeamID TeamID_index_0 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[0]);
+		
+		// first is two pair red ten game is over
+		if (TeamID_index_0 == ETeamID::TwoPairRedTen)
+		{
+			IsGameOver = true;
+		}
+		else
+		{
+			IsGameOver = false;
+		}
+	}
+	else if (FinshiPlayers.Num() == 2)
+	{
+		ETeamID TeamID_index_0 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[0]);
+		ETeamID TeamID_index_1 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[1]);
+
+		if (TeamID_index_1 == ETeamID::TwoPairRedTen)
+		{
+
+			IsGameOver = true;
+		}
+		else if (TeamID_index_0 == TeamID_index_1)
+		{
+
+			IsGameOver = true;
+		}
+		else
+		{
+			IsGameOver = false;
+		}
+	}
+	else if (FinshiPlayers.Num() == 3)
+	{
+		IsGameOver = true;
+	}
+
+	return IsGameOver;
+}
+
+void ACardGameMode::EndGame()
+{
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (!CardGameState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No CardGameState found"));
+		return;
+	}
+
+	TArray<APlayerStateCustom*> PlayerStatesArray = CardGameState->GetPlayerStateArr();
+	for (int32 i = 0; i < PlayerStatesArray.Num(); i++)
+	{
+		APlayerStateCustom* PS = PlayerStatesArray[i];
+		if (PS)
+		{
+			int32 PSIndex = PS->GetPlayerIndex();
+			if (PSIndex != FinshiPlayers[0] && !FinshiPlayers.Contains(PSIndex))
+			{
+				PS->SetFinishHandCards(true);
+				FinshiPlayers.Add(PSIndex);
+			}
+		}
+	}
+
+	ETeamID TeamID_index_0 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[0]);
+	ETeamID TeamID_index_1 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[1]);
+	ETeamID TeamID_index_2 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[2]);
+	ETeamID TeamID_index_3 = CardGameState->GetPlayerIndexTeamID(FinshiPlayers[3]);
+	if (TeamID_index_0 == ETeamID::TwoPairRedTen)
+	{
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Win);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Lose);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Lose);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Lose);
+	}
+	else if (TeamID_index_1 == ETeamID::TwoPairRedTen || TeamID_index_2 == ETeamID::TwoPairRedTen)
+	{
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Draw);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Draw);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Draw);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Draw);
+	}
+	else if (TeamID_index_3 == ETeamID::TwoPairRedTen)
+	{
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Lose);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Win);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Win);
+		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Win);
+	}
+	else if (TeamID_index_0 == ETeamID::RedTen)
+	{
+		if (TeamID_index_1 == ETeamID::RedTen || TeamID_index_2 == ETeamID::RedTen)
+		{
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Win);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Win);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Lose);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Lose);
+		}
+		else
+		{
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Draw);
+		}
+	}
+	else if (TeamID_index_0 == ETeamID::NoRedTen)
+	{
+		if (TeamID_index_1 == ETeamID::NoRedTen || TeamID_index_2 == ETeamID::NoRedTen)
+		{
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Win);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Win);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Lose);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Lose);
+		}
+		else
+		{
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Draw);
+			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Draw);
+		}
 	}
 }

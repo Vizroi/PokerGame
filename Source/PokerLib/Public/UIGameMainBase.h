@@ -64,4 +64,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnPlayerScoreChange(int32 PlayerScore);
+		
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type);
 };

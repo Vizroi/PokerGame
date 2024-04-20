@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class ETeamID : uint8
 {
     InValid UMETA(DisplayName = "InValid"),
+    TwoPairRedTen UMETA(DisplayName = "TWoPairRedTen"),
 	RedTen UMETA(DisplayName = "RedTen"),
 	NoRedTen UMETA(DisplayName = "NoRedTen")
 };
@@ -21,6 +22,15 @@ enum class EIdentityStatus : uint8
     InValid UMETA(DisplayName = "InValid"),
 	Identity UMETA(DisplayName = "Identity"),
 	NoIdentity UMETA(DisplayName = "NoIdentity")
+};
+
+UENUM(BlueprintType)
+enum class EGameOverType : uint8
+{
+    None UMETA(DisplayName = "None"),
+    Win UMETA(DisplayName = "Win"),
+    Lose UMETA(DisplayName = "Lose"),
+    Draw UMETA(DisplayName = "Draw")
 };
 
 
@@ -97,9 +107,21 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Card Game")
     void HasReadTen(bool& HasHeartTen, bool& HasDiamondTen);
 
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    void SetFinishHandCards(bool InValue);
+
+    UFUNCTION(BlueprintCallable, Category = "Card Game")
+    bool GetFinishHandCards() { return bIsFinishHandCards; }
+
     // 通过PlayerIndex获取在当前屏幕的哪个座位
     UFUNCTION(BlueprintCallable, Category = "Player Info")
     int32 GetSeatIndexByPlayerIndex(int32 Index);
+
+    UFUNCTION(BlueprintCallable, Category = "Player Info")
+    void SetGameOverType(EGameOverType Type);
+
+    UFUNCTION(BlueprintCallable, Category = "Player Info")
+    EGameOverType GetGameOverType() { return GameOverType; }
 
     UFUNCTION(BlueprintCallable, Category = "Team Info")
     void AssignTeamID();
@@ -145,7 +167,13 @@ protected:
     void OnRep_TeamIDChange();
 
     UFUNCTION()
+    void OnRep_BetScoreChange();
+
+    UFUNCTION()
     void OnRep_IdentityStatusChange();
+    
+    UFUNCTION()
+    void OnRep_GameOverTypeChange();
 
 protected:
     UPROPERTY(ReplicatedUsing = OnRep_PlayerIndex, VisibleAnywhere, BlueprintReadOnly, Category = "Player Status")
@@ -167,11 +195,17 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_TeamIDChange, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
     ETeamID TeamID;
 
-    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
+    UPROPERTY(ReplicatedUsing = OnRep_BetScoreChange, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
     int32 PlayerBetScore;
 
     UPROPERTY(ReplicatedUsing = OnRep_IdentityStatusChange, VisibleAnywhere, BlueprintReadWrite, Category = "Player Status")
     EIdentityStatus IdentityStatus = EIdentityStatus::InValid;
+
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Card Game")
+    bool bIsFinishHandCards = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_GameOverTypeChange, VisibleAnywhere, BlueprintReadWrite, Category = "Player Status")
+    EGameOverType GameOverType = EGameOverType::None;
 
 public:
     void NotifyPlayerJoinMainMenuBase();
@@ -181,5 +215,7 @@ public:
     void NotifyPlayerCardsCountToMainMenuBase();
     void NotifyPlayerTeamIdToMainMenuBase();
     void NotifyPlayerIdentityStatusToMenuBase();
+    void NotifyPlayerBetScoreChange();
+    void NotifyPlayerGameOverTypeChange();
 };
 

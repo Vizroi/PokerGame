@@ -41,6 +41,9 @@ public:
 	APlayerStateCustom* GetPlayerStateByIndex(int32 index);
 
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
+	TArray<APlayerStateCustom*> GetPlayerStateArr() {return PlayerStateArray;}
+
+	UFUNCTION(BlueprintCallable, Category = "CardGameState")
 	void AddPlayerStateArray(APlayerStateCustom* NewPlayerState);
 
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
@@ -88,6 +91,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void MoveToNextPlayer();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void SetPlayerIndexGameOverType(int32 InPlayerIndex, EGameOverType Type);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	EGameOverType GetPlayerIndexGameOverType(int32 InPlayerIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	ETeamID GetPlayerIndexTeamID(int32 InPlayerIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	void AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards);

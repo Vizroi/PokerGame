@@ -13,6 +13,7 @@
 /**
  * 
  */
+
 UCLASS()
 class POKERLIB_API ACardGameMode : public AGameModeBase
 {
@@ -35,9 +36,17 @@ public:
     void AssignTeams();
     void ReSetGameScore();
 
+    //ºÏ≤‚ «∑Ò”Œœ∑Ω· ¯
+    void OnPlayerFinishPlayCards(int32 PlayerIndex);
+    bool CheckGameOver();
+    void EndGame();
+
 protected:
     UPROPERTY()
     UDeck* GameDeck = nullptr;
+
+    UPROPERTY()
+    TArray<int32> FinshiPlayers;
 
 private:
     bool bGameStarted = false;

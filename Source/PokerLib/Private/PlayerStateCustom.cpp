@@ -2,6 +2,7 @@
 
 
 #include "PlayerStateCustom.h"
+#include "CardGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "CardPlayerController.h"
 #include <Kismet/GameplayStatics.h>
@@ -12,12 +13,14 @@ APlayerStateCustom::APlayerStateCustom()
 	bReplicates = true;
     PlayerIndex = -1;
     PlayerCustomName = FString(TEXT("None"));
+
     bIsReady = false;
     HandCards.Empty();
     HandCardsCount = 0;
-
     PlayerBetScore = 0;
     TeamID = ETeamID::InValid;
+    bIsFinishHandCards = false;
+    GameOverType = EGameOverType::None;
 }
 
 void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -29,6 +32,8 @@ void APlayerStateCustom::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
     DOREPLIFETIME(APlayerStateCustom, bIsReady); 
     DOREPLIFETIME(APlayerStateCustom, HandCardsCount);
     DOREPLIFETIME(APlayerStateCustom, PlayerBetScore);
+    DOREPLIFETIME(APlayerStateCustom, bIsFinishHandCards);
+    DOREPLIFETIME(APlayerStateCustom, GameOverType);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, HandCards, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, TeamID, COND_OwnerOnly);
     DOREPLIFETIME_CONDITION(APlayerStateCustom, IdentityStatus, COND_OwnerOnly);
@@ -187,6 +192,18 @@ void APlayerStateCustom::UpdateCardsCount()
     if (GetLocalRole() == ROLE_Authority)
     {
         HandCardsCount = HandCards.Num();
+
+        if (HandCardsCount == 0)
+        {
+            SetFinishHandCards(true);
+
+
+            ACardGameMode* GameMode = Cast<ACardGameMode>(GetWorld()->GetAuthGameMode());
+            if (GameMode)
+            {
+                GameMode->OnPlayerFinishPlayCards(PlayerIndex);
+            }
+        }
     }
 }
 
@@ -223,6 +240,17 @@ void APlayerStateCustom::HasReadTen(bool& HasHeartTen, bool& HasDiamondTen)
     }
 }
 
+void APlayerStateCustom::SetFinishHandCards(bool InValue)
+{
+    if (GetLocalRole() == ROLE_Authority)
+    {
+        if (bIsFinishHandCards != InValue)
+        {
+            bIsFinishHandCards = InValue;
+        }
+	}
+}
+
 int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
 {
     int32 SeatIndex = -1;
@@ -240,6 +268,17 @@ int32 APlayerStateCustom::GetSeatIndexByPlayerIndex(int32 Index)
     return SeatIndex;
 }
 
+void APlayerStateCustom::SetGameOverType(EGameOverType Type)
+{
+    if (GetLocalRole() == ROLE_Authority)
+    {
+        if (GameOverType != Type)
+        {
+			GameOverType = Type;
+		}
+	}
+}
+
 void APlayerStateCustom::AssignTeamID()
 {
     if (GetLocalRole() == ROLE_Authority)
@@ -247,7 +286,11 @@ void APlayerStateCustom::AssignTeamID()
         bool isHaveHeartTen = false;
         bool isHaveDiamondTen = false;
         HasReadTen(isHaveHeartTen, isHaveDiamondTen);
-        if (isHaveHeartTen || isHaveDiamondTen)
+        if (isHaveHeartTen && isHaveDiamondTen)
+        {
+            TeamID = ETeamID::TwoPairRedTen;
+        }
+        else if (isHaveHeartTen || isHaveDiamondTen)
         {
             TeamID = ETeamID::RedTen;
         }
@@ -328,9 +371,19 @@ void APlayerStateCustom::OnRep_TeamIDChange()
     NotifyPlayerTeamIdToMainMenuBase();
 }
 
+void APlayerStateCustom::OnRep_BetScoreChange()
+{
+    NotifyPlayerBetScoreChange();
+}
+
 void APlayerStateCustom::OnRep_IdentityStatusChange()
 {
     NotifyPlayerIdentityStatusToMenuBase();
+}
+
+void APlayerStateCustom::OnRep_GameOverTypeChange()
+{
+    NotifyPlayerGameOverTypeChange();
 }
 
 void APlayerStateCustom::NotifyPlayerJoinMainMenuBase()
@@ -394,4 +447,22 @@ void APlayerStateCustom::NotifyPlayerIdentityStatusToMenuBase()
     {
 		PC->OnPlayerIdentityUpdate(IdentityStatus);
 	}
+}
+
+void APlayerStateCustom::NotifyPlayerBetScoreChange()
+{
+    ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    if (PC)
+    {
+        PC->OnPlayerScoreChange(PlayerBetScore);
+    }
+}
+
+void APlayerStateCustom::NotifyPlayerGameOverTypeChange()
+{
+    ACardPlayerController* PC = Cast<ACardPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+    if (PC)
+    {
+        PC->OnPlayerGameOverChange(PlayerIndex, GameOverType);
+    }
 }

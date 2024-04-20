@@ -8,6 +8,7 @@
 ACardGameState::ACardGameState()
 {
 	bReplicates = true;
+
 	GameScore = 0;
 	CurrentGamePhase = EGamePhase::WaitingForPlayers;
 	CurrentPlayerIndex = -1;
@@ -251,6 +252,42 @@ void ACardGameState::MoveToNextPlayer()
 
 	UE_LOG(LogTemp, Warning, TEXT("Server :               CurrentPlayerIndex: %d"), CurrentPlayerIndex);
 	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
+}
+
+void ACardGameState::SetPlayerIndexGameOverType(int32 InPlayerIndex, EGameOverType Type)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	APlayerStateCustom* PlayerState = GetPlayerStateByIndex(InPlayerIndex);
+	if (PlayerState)
+	{
+		PlayerState->SetGameOverType(Type);
+	}
+}
+
+EGameOverType ACardGameState::GetPlayerIndexGameOverType(int32 InPlayerIndex)
+{
+	EGameOverType Type = EGameOverType::None;
+	APlayerStateCustom* PlayerState = GetPlayerStateByIndex(InPlayerIndex);
+	if (PlayerState)
+	{
+		Type = PlayerState->GetGameOverType();
+	}
+	return Type;
+}
+
+ETeamID ACardGameState::GetPlayerIndexTeamID(int32 InPlayerIndex)
+{
+	ETeamID ID = ETeamID::InValid;
+	APlayerStateCustom* PlayerState = GetPlayerStateByIndex(InPlayerIndex);
+	if (PlayerState)
+	{
+		ID = PlayerState->GetTeamID();
+	}
+	return ID;
 }
 
 void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards)
