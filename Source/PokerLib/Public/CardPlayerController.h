@@ -76,7 +76,7 @@ public:
 	void OnUpdateGameScore(int32 GameScore);
 	void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
 	void OnPlayerIdentityUpdate(EIdentityStatus Status);
-	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex);
+	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue);
 	void OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards);
 
 protected:
@@ -87,7 +87,7 @@ protected:
 	void ServerSelectCard(int32 CardId);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerPlayCards(const TArray<int32>& CardsId);
+	void ServerPlayCards();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPassTurn();

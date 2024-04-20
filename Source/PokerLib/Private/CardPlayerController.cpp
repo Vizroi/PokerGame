@@ -87,14 +87,42 @@ bool ACardPlayerController::IsCardInHand(int32 CardId)
 
 bool ACardPlayerController::IsCanPlayCardsInHand()
 {
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: Can't access this function on client!"));
+		return false;
+	}
+
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
 	if (!PS)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: PlayerState is NULL!"));
 	}
 
-	TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::IsCanPlayCardsInHand: GameState is NULL!"));
+		return false;
+	}
 
+	if (PS->GetPlayerIndex() == GS->GetCurrentPlayerIndex())
+	{
+		if (GS->GetCurrentPlayerIndex() == GS->GetLastPlayCardsPlayerIndex())
+		{
+			return true;
+		}
+		else if (GS->GetLastPlayCardsPlayerIndex() == -1)
+		{
+			return true;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ACardPlayerController::IsCanPlayCardsInHand: Not your turn!"))
+		}
+	}
+
+	TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
 	if (CheckPlayCards(CardsIdArray))
 	{
 		return true;
@@ -113,7 +141,6 @@ bool ACardPlayerController::CheckPlayCards(const TArray<int32>& CardId)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::CheckPlayCards: GameState is NULL!"));
 		return false;
-
 	}
 
 	TArray<FCard> CurCards = GetCardsByID(CardId);
@@ -156,18 +183,8 @@ void ACardPlayerController::ClientPlayCards()
 			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::PlayCards: PlayerState is NULL!"));
 		}
 
-		TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
-
-		if (CheckPlayCards(CardsIdArray))
-		{
-			ServerPlayCards(CardsIdArray);
-
-			PS->PrintHandsCardsInfo("ClientPlayCards: ");
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::PlayCards: Can't play the cards!"));
-		}
+		ServerPlayCards();
+		PS->PrintHandsCardsInfo("ClientPlayCards: ");
 	}
 }
 
@@ -342,7 +359,7 @@ void ACardPlayerController::OnPlayerIdentityUpdate(EIdentityStatus Status)
 
 }
 
-void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex)
+void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue)
 {
 	if (!GameMenuWidget)
 	{
@@ -350,7 +367,7 @@ void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex)
 		return;
 	}
 
-	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex);
+	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex, LastPlayCardsPlayerIndexValue);
 }
 
 void ACardPlayerController::OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards)
@@ -445,7 +462,7 @@ bool ACardPlayerController::ServerSelectCard_Validate(int32 CardId)
 	return true;
 }
 
-void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& CardsId)
+void ACardPlayerController::ServerPlayCards_Implementation()
 {
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
 	if (!PS)
@@ -462,25 +479,25 @@ void ACardPlayerController::ServerPlayCards_Implementation(const TArray<int32>& 
 	
 	}
 
-	if (!CheckPlayCards(CardsId))
+	if (!IsCanPlayCardsInHand())
 	{
 		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPlayCards: Can't Try Play Cards"));
 		return;
 	}
 	else
 	{
-		TArray<FCard> LastCards = GetCardsByID(CardsId);
+		TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
+		TArray<FCard> LastCards = GetCardsByID(CardsIdArray);
 		GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
 
-
 		PS->PrintHandsCardsInfo("ServerPlayCards: ");
-		PS->RemoveCardToHandFormCardId(CardsId);
+		PS->RemoveCardToHandFormCardId(CardsIdArray);
 
 		GS->MoveToNextPlayer();
 	}
 }
 
-bool ACardPlayerController::ServerPlayCards_Validate(const TArray<int32>& CardsId)
+bool ACardPlayerController::ServerPlayCards_Validate()
 {
 	return true;
 }

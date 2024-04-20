@@ -343,17 +343,7 @@ void ACardGameState::OnRep_CurrentPlayerIndexChange()
 	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PC)
 	{
-		PC->OnCurrentPlayerIndexChange(CurrentPlayerIndex);
-	}
-
-
-	for(int32 i = 0; i < PlayerStateArray.Num(); ++i)
-	{
-		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
-		if(PlayerState)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Client:               PlayerIndex: %d"), PlayerState->GetPlayerIndex());
-		}
+		PC->OnCurrentPlayerIndexChange(CurrentPlayerIndex, LastPlayCardsPlayerIndex);
 	}
 }
 

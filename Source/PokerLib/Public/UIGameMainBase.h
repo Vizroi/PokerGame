@@ -56,7 +56,7 @@ public:
 	
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
-		void OnCurrentPlayerIndexChange(int32 CurPlayerIndex);
+		void OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue);
 
 	//当卡牌被点击
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
