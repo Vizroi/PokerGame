@@ -147,6 +147,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Debug Card Info")
     void PrintSelectedCardsInfo(FString Text);
 
+    UFUNCTION(BlueprintCallable, Category = "Debug Card Info")
+    void PrintPlayCardsInfo(FString Text, const TArray<FCard>& Cards);
+
 protected:
     UFUNCTION()
     void OnRep_PlayerIndex();

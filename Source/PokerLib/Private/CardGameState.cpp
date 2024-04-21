@@ -239,14 +239,35 @@ void ACardGameState::MoveToNextPlayer()
 	}
 	else
 	{
-		if (CurrentPlayerIndex + 1 >= PlayerStateArray.Num())
+		int32 EndInex = CurrentPlayerIndex + 1;
+		do
 		{
-			CurrentPlayerIndex = 0;
-		}
-		else
-		{
-			CurrentPlayerIndex++;
-		}
+			if (EndInex >= PlayerStateArray.Num())
+			{
+				EndInex = 0;
+			}
+
+			APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[EndInex]);
+			if (PlayerState)
+			{
+				if (PlayerState->GetFinishHandCards())
+				{
+					EndInex++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Server :               PlayerState is nullptr"));
+				break;
+			}
+
+		} while (EndInex != CurrentPlayerIndex);
+
+		CurrentPlayerIndex = EndInex;
 	}
 
 
@@ -290,7 +311,7 @@ ETeamID ACardGameState::GetPlayerIndexTeamID(int32 InPlayerIndex)
 	return ID;
 }
 
-void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards)
+void ACardGameState::AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards)
 {
 	if(!HasAuthority())
 	{
@@ -303,6 +324,7 @@ void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& Last
 		if(Elem.PlayerIndex == PlayerIndex)
 		{
 			bFound = true;
+			Elem.LastCards.Empty();
 			Elem.LastCards = LastCards;
 			break;
 		}
@@ -324,14 +346,20 @@ void ACardGameState::AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& Last
 
 TArray<FCard> ACardGameState::GetLastCardSetByPlayerIndex(int32 PlayerIndex)
 {
-	for (auto Elem : PlayerLastCards)
+	TArray<FCard> CardsArr;
+
+	if (GetCurrentPlayerIndex() != GetLastPlayCardsPlayerIndex() && GetLastPlayCardsPlayerIndex() != -1)
 	{
-		if (Elem.PlayerIndex == PlayerIndex)
+		for (auto Elem : PlayerLastCards)
 		{
-			return Elem.LastCards;
+			if (Elem.PlayerIndex == PlayerIndex)
+			{
+				CardsArr = Elem.LastCards;
+			}
 		}
 	}
-	return TArray<FCard>();
+
+	return CardsArr;
 }
 
 void ACardGameState::OnRep_GamePhaseChange()

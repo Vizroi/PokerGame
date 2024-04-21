@@ -106,21 +106,6 @@ bool ACardPlayerController::IsCanPlayCardsInHand()
 		return false;
 	}
 
-	if (PS->GetPlayerIndex() == GS->GetCurrentPlayerIndex())
-	{
-		if (GS->GetCurrentPlayerIndex() == GS->GetLastPlayCardsPlayerIndex())
-		{
-			return true;
-		}
-		else if (GS->GetLastPlayCardsPlayerIndex() == -1)
-		{
-			return true;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("ACardPlayerController::IsCanPlayCardsInHand: Not your turn!"))
-		}
-	}
 
 	TArray<int32> CardsIdArray = PS->GetAllSelectedCardID();
 	if (CheckPlayCards(CardsIdArray))
@@ -184,7 +169,7 @@ void ACardPlayerController::ClientPlayCards()
 		}
 
 		ServerPlayCards();
-		PS->PrintHandsCardsInfo("ClientPlayCards: ");
+		//PS->PrintHandsCardsInfo("ClientPlayCards: ");
 	}
 }
 
@@ -513,7 +498,10 @@ void ACardPlayerController::ServerPlayCards_Implementation()
 		TArray<FCard> LastCards = GetCardsByID(CardsIdArray);
 		GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
 
-		PS->PrintHandsCardsInfo("ServerPlayCards: ");
+		PS->PrintPlayCardsInfo("ServerPlayCards:  ",LastCards);
+		//PS->PrintHandsCardsInfo("ServerPlayCards: ");
+
+
 		PS->RemoveCardToHandFormCardId(CardsIdArray);
 
 		GS->MoveToNextPlayer();
@@ -545,7 +533,7 @@ void ACardPlayerController::ServerPassTurn_Implementation()
 	TArray<FCard> LastCards;
 	GS->AddLastCardSet(PS->GetPlayerIndex(), LastCards);
 	PS->ClearSelectedCards();
-	PS->PrintHandsCardsInfo("ServerPassTurn: ");
+	//PS->PrintHandsCardsInfo("ServerPassTurn: ");
 	GS->MoveToNextPlayer();
 }
 

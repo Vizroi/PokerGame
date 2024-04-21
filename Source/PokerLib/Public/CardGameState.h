@@ -102,7 +102,7 @@ public:
 	ETeamID GetPlayerIndexTeamID(int32 InPlayerIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
-	void AddLastCardSet(int32 PlayerIndex, const TArray<FCard>& LastCards);
+	void AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards);
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	TArray<FCard> GetLastCardSetByPlayerIndex(int32 PlayerIndex);

@@ -74,6 +74,11 @@ bool URedTenCardFunctionLibrary::CompareCards(const TArray<FCard>& CurrentCards,
 		return false;
 	}
 
+	if (CurrentCardSet.Type == ECardSetType::RedTens)
+	{
+		return true;
+	}
+
 	if (LastCardsSet.Type == ECardSetType::BigBomb)
 	{
 		if (CurrentCardSet.Type == ECardSetType::BigBomb)
@@ -300,7 +305,7 @@ FCard URedTenCardFunctionLibrary::GetCardHighestCard(const TArray<FCard>& Cards)
 	FCard HighestCard = Cards[0];
 	for(const FCard& Card : Cards)
 	{
-		if (GetCardPriority(Card) > GetCardPriority(HighestCard))
+		if (GetCardPriority(Card) < GetCardPriority(HighestCard))
 		{
 			HighestCard = Card;
 		}

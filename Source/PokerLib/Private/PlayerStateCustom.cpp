@@ -91,6 +91,16 @@ void APlayerStateCustom::RemoveCardToHand(const FCard& Card)
 			}
 		}
 		UpdateCardsCount();
+
+        if (HandCardsCount == 0)
+        {
+            SetFinishHandCards(true);
+            ACardGameMode* GameMode = Cast<ACardGameMode>(GetWorld()->GetAuthGameMode());
+            if (GameMode)
+            {
+                GameMode->OnPlayerFinishPlayCards(PlayerIndex);
+            }
+        }
 	}
 }
 
@@ -114,6 +124,15 @@ void APlayerStateCustom::RemoveCardToHandFormCardId(const TArray<int32>& CardId)
 		}
 		UpdateCardsCount();
 
+        if (HandCardsCount == 0)
+        {
+            SetFinishHandCards(true);
+            ACardGameMode* GameMode = Cast<ACardGameMode>(GetWorld()->GetAuthGameMode());
+            if (GameMode)
+            {
+                GameMode->OnPlayerFinishPlayCards(PlayerIndex);
+            }
+        }
         //PrintHandsCardsInfo("After RemoveCardToHandFromCardId: ");
 	}
 }
@@ -192,18 +211,6 @@ void APlayerStateCustom::UpdateCardsCount()
     if (GetLocalRole() == ROLE_Authority)
     {
         HandCardsCount = HandCards.Num();
-
-        if (HandCardsCount == 0)
-        {
-            SetFinishHandCards(true);
-
-
-            ACardGameMode* GameMode = Cast<ACardGameMode>(GetWorld()->GetAuthGameMode());
-            if (GameMode)
-            {
-                GameMode->OnPlayerFinishPlayCards(PlayerIndex);
-            }
-        }
     }
 }
 
@@ -339,6 +346,15 @@ void APlayerStateCustom::PrintSelectedCardsInfo(FString Text)
 			URedTenCardFunctionLibrary::PrintCardInfo(Elem);
 		}
 	}
+}
+
+void APlayerStateCustom::PrintPlayCardsInfo(FString Text, const TArray<FCard>& Cards)
+{
+    UE_LOG(LogTemp, Warning, TEXT("PlayCardsInfo --- %s"), *Text);
+    for (auto Elem : Cards)
+    {
+        URedTenCardFunctionLibrary::PrintCardInfo(Elem);
+    }
 }
 
 void APlayerStateCustom::OnRep_PlayerIndex()
