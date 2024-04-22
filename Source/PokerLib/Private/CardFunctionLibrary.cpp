@@ -8,12 +8,12 @@ bool UCardFunctionLibrary::IsJoker(const FCard& Card)
     return Card.Suit == ESuit::Joker || Card.Value == ECardValue::JokerA || Card.Value == ECardValue::JokerB;
 }
 
-void UCardFunctionLibrary::PrintCardInfo(const FCard& Card)
+void UCardFunctionLibrary::PrintCardInfo(const FCard& Card, FString AppendString)
 {
     FString SuitString = GetCardSuitString(Card.Suit);
     FString ValueString = GetCardValueString(Card.Value);
 
-    UE_LOG(LogTemp, Warning, TEXT("Card Info: %s of %s"), *SuitString , *ValueString);
+    UE_LOG(LogTemp, Warning, TEXT("%s Card Info: %s of %s"), *AppendString , *SuitString , *ValueString);
 }
 
 UTexture2D* UCardFunctionLibrary::GetCardTexture(ESuit Suit, ECardValue Value, UDataTable* DataTable)

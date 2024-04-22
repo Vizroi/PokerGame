@@ -319,7 +319,7 @@ void ACardGameState::AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards)
 	}
 
 	bool bFound = false;
-	for (auto Elem : PlayerLastCards)
+	for (auto& Elem : PlayerLastCards)
 	{
 		if(Elem.PlayerIndex == PlayerIndex)
 		{

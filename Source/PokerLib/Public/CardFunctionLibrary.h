@@ -21,7 +21,7 @@ public:
 	static bool IsJoker(const FCard& Card);
 
 	UFUNCTION(BlueprintCallable, Category = "Card Functions")
-	static void PrintCardInfo(const FCard& Card);
+	static void PrintCardInfo(const FCard& Card, FString AppendString = "");
 
 	UFUNCTION(BlueprintCallable, Category = "Card Functions")
 	static UTexture2D* GetCardTexture(ESuit Suit, ECardValue Value, UDataTable* DataTable);

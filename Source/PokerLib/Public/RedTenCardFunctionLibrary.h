@@ -58,10 +58,16 @@ public:
 	static FCard GetCardHighestCard(const TArray<FCard>& Cards);
 
 	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static FCard GetStraightHighestCard(const TArray<FCard>& Cards);
+
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
 	static int32 GetCardPriority(const FCard& Card);
 
 	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
 	static int32 GetCardStraightPriority(const FCard& Card);
+
+	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
+	static ECardValue GetCardValueForStraightPriority(int32 PriorityValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Cards Priority")
 	static bool CompareCardsPriority(const FCard& Card1, const FCard& Card2);

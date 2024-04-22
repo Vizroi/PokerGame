@@ -34,7 +34,7 @@ FCardSet URedTenCardFunctionLibrary::DetermineCardSetType(const TArray<FCard>& C
 	else if (IsStraight(Cards))
 	{
 		Result.Type = ECardSetType::Straight;
-		Result.HighestCard = GetCardHighestCard(Cards);
+		Result.HighestCard = GetStraightHighestCard(Cards);
 	}
 	else if (IsSingle(Cards))
 	{
@@ -246,43 +246,43 @@ bool URedTenCardFunctionLibrary::IsStraight(const TArray<FCard>& Cards)
 		return false;
 	}
 
-	for (auto Elem : Cards)
+for (auto Elem : Cards)
+{
+	if (IsRedTen(Elem))
 	{
-		if (IsRedTen(Elem))
+		return false;
+	}
+}
+
+TArray<FCard> SortedValues = Cards;
+SortCardsForStraightPriority(SortedValues);
+
+int32 JokerCount = 0;
+int32 LastValue = -1;
+int32 Gaps = 0;
+
+for (const FCard& Card : SortedValues)
+{
+	if (IsJoker(Card))
+	{
+		JokerCount++;
+		continue;
+	}
+
+	int CurrentValue = GetCardStraightPriority(Card);
+	if (LastValue != -1)
+	{
+		int Gap = CurrentValue - LastValue - 1;
+		if (Gap > 0)
 		{
-			return false;
+			Gaps += Gap;
 		}
 	}
 
-	TArray<FCard> SortedValues = Cards;
-	SortCardsForStraightPriority(SortedValues);
+	LastValue = CurrentValue;
+}
 
-	int32 JokerCount = 0;
-	int32 LastValue = -1;
-	int32 Gaps = 0;
-
-	for (const FCard& Card : SortedValues)
-	{
-		if (IsJoker(Card))
-		{
-			JokerCount++;
-			continue;
-		}
-
-		int CurrentValue = GetCardStraightPriority(Card);
-		if (LastValue != -1)
-		{
-			int Gap = CurrentValue - LastValue - 1;
-			if (Gap > 0)
-			{
-				Gaps += Gap;
-			}
-		}
-
-		LastValue = CurrentValue;
-	}
-
-	return JokerCount >= Gaps;
+return JokerCount >= Gaps;
 }
 
 bool URedTenCardFunctionLibrary::IsSingle(const TArray<FCard>& Cards)
@@ -303,13 +303,133 @@ FCard URedTenCardFunctionLibrary::GetCardHighestCard(const TArray<FCard>& Cards)
 	}
 
 	FCard HighestCard = Cards[0];
-	for(const FCard& Card : Cards)
+	for (const FCard& Card : Cards)
 	{
 		if (GetCardPriority(Card) < GetCardPriority(HighestCard))
 		{
 			HighestCard = Card;
 		}
 	}
+
+	return HighestCard;
+}
+
+FCard URedTenCardFunctionLibrary::GetStraightHighestCard(const TArray<FCard>& Cards)
+{
+	FCard HighestCard;
+
+	if (Cards.Num() < 3)
+	{
+		return HighestCard;
+	}
+
+	bool ContainsAce = false;
+	bool ContainsK = false;
+	int32 JokerCount = 0;
+	FCard JokerCard_1 = FCard();
+	FCard JokerCard_2 = FCard();
+
+	for (auto& Elem : Cards)
+	{
+		if (IsRedTen(Elem))
+		{
+			return HighestCard;
+		}
+		else if (Elem.Value == ECardValue::Ace)
+		{
+			ContainsAce = true;
+		}
+		else if (Elem.Value == ECardValue::K)
+		{
+			ContainsK = true;
+		}
+		else if (IsJoker(Elem))
+		{
+			if(JokerCard_1.IsEmpty())
+			{
+				JokerCard_1 = Elem;
+			}
+			else
+			{
+				JokerCard_2 = Elem;
+			}
+			JokerCount++;
+		}
+	}
+
+	TArray<FCard> SortedValues = Cards;
+	SortCardsForStraightPriority(SortedValues);
+
+	int32 LastValue = -1;
+	int32 Gaps = 0;
+
+	for (int32 i = 1; i < SortedValues.Num(); ++i)
+	{
+		if (!IsJoker(SortedValues[i]))
+		{
+			int32 CurrentValue = GetCardStraightPriority(SortedValues[i]);
+			if (LastValue > 0)
+			{
+				Gaps += CurrentValue - LastValue - 1;
+			}
+
+			LastValue = CurrentValue;
+		}
+
+	}
+
+	FCard LastCard = SortedValues.Last();
+
+	if (Gaps < 1 && JokerCount > 0)
+	{
+		if (JokerCount == 1)
+		{
+			if (!ContainsAce)
+			{
+				ECardValue NewValue = GetCardValueForStraightPriority(GetCardStraightPriority(LastCard) + 1);
+				HighestCard = FCard(LastCard.CardID, JokerCard_1.Suit, NewValue, JokerCard_1.bSelected);
+			}
+			else
+			{
+				HighestCard = SortedValues.Last();
+			}
+		}
+		else if (JokerCount == 2)
+		{
+			if (LastCard.Value < ECardValue::K)
+			{
+				ECardValue NewValue = GetCardValueForStraightPriority(GetCardStraightPriority(LastCard) + 2);
+				HighestCard = FCard(LastCard.CardID, JokerCard_2.Suit, NewValue, JokerCard_2.bSelected);
+			}
+			else if (LastCard.Value == ECardValue::K)
+			{
+				ECardValue NewValue = GetCardValueForStraightPriority(GetCardStraightPriority(LastCard) + 1);
+				HighestCard = FCard(LastCard.CardID, JokerCard_1.Suit, NewValue, JokerCard_1.bSelected);
+			}
+			else
+			{
+				HighestCard = SortedValues.Last();
+			}
+		}
+	}
+	else if (JokerCount == 2 && Gaps == 1)
+	{
+		if (!ContainsAce)
+		{
+			ECardValue NewValue = GetCardValueForStraightPriority(GetCardStraightPriority(LastCard) + 1);
+			HighestCard = FCard(LastCard.CardID, JokerCard_1.Suit, NewValue, JokerCard_1.bSelected);
+		}
+		else
+		{
+			HighestCard = SortedValues.Last();
+		}
+	}
+	else if (JokerCount >= Gaps)
+	{
+		HighestCard = SortedValues.Last();
+	}
+
+	PrintCardInfo(HighestCard, "HighestCard !!!!!!!");
 
 	return HighestCard;
 }
@@ -370,18 +490,36 @@ int32 URedTenCardFunctionLibrary::GetCardStraightPriority(const FCard& Card)
 	return -1;
 }
 
+ECardValue URedTenCardFunctionLibrary::GetCardValueForStraightPriority(int32 PriorityValue)
+{
+	if (PriorityValue == 1)
+		return ECardValue::Six;
+	if (PriorityValue == 2)
+		return ECardValue::Seven;
+	if (PriorityValue == 3)
+		return ECardValue::Eight;
+	if (PriorityValue == 4)
+		return ECardValue::Nine;
+	if (PriorityValue == 5)
+		return ECardValue::Ten;
+	if (PriorityValue == 6)
+		return ECardValue::J;
+	if (PriorityValue == 7)
+		return ECardValue::Q;
+	if (PriorityValue == 8)
+		return ECardValue::K;
+	if (PriorityValue == 9)
+		return ECardValue::Ace;
+
+	return ECardValue::None;
+}
+
 bool URedTenCardFunctionLibrary::CompareCardsPriority(const FCard& Card1, const FCard& Card2)
 {
 	if (GetCardPriority(Card1) < GetCardPriority(Card2))
 	{
 		return true;
 	}
-	/*
-	else if (GetCardPriority(Card1) == GetCardPriority(Card2))
-	{
-		return static_cast<int32>(Card1.Suit) > static_cast<int32>(Card2.Suit);
-	}
-	*/
 	return false;
 }
 
