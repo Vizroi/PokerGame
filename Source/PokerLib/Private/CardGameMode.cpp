@@ -267,9 +267,9 @@ void ACardGameMode::EndGame()
 		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[2], EGameOverType::Win);
 		CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Win);
 	}
-	else if (TeamID_index_0 == ETeamID::RedTen)
+	else if (TeamID_index_0 == ETeamID::RedTen_Heart || TeamID_index_0 == ETeamID::RedTen_Diamond)
 	{
-		if (TeamID_index_1 == ETeamID::RedTen || TeamID_index_2 == ETeamID::RedTen)
+		if (TeamID_index_1 == ETeamID::RedTen_Heart || TeamID_index_1 == ETeamID::RedTen_Diamond || TeamID_index_2 == ETeamID::RedTen_Heart ||TeamID_index_2 == ETeamID::RedTen_Diamond)
 		{
 			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[0], EGameOverType::Win);
 			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[1], EGameOverType::Win);

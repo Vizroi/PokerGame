@@ -12,8 +12,9 @@ enum class ETeamID : uint8
 {
     InValid UMETA(DisplayName = "InValid"),
     TwoPairRedTen UMETA(DisplayName = "TWoPairRedTen"),
-	RedTen UMETA(DisplayName = "RedTen"),
-	NoRedTen UMETA(DisplayName = "NoRedTen")
+    RedTen_Heart UMETA(DisplayName = "RedTen_Heart"),
+    RedTen_Diamond UMETA(DisplayName = "RedTen_Diamond"),
+    NoRedTen UMETA(DisplayName = "NoRedTen")
 };
 
 UENUM(BlueprintType)

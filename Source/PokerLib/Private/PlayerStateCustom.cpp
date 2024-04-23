@@ -297,9 +297,13 @@ void APlayerStateCustom::AssignTeamID()
         {
             TeamID = ETeamID::TwoPairRedTen;
         }
-        else if (isHaveHeartTen || isHaveDiamondTen)
+        else if (isHaveHeartTen)
         {
-            TeamID = ETeamID::RedTen;
+            TeamID = ETeamID::RedTen_Heart;
+        }
+        else if (isHaveDiamondTen)
+        {
+            TeamID = ETeamID::RedTen_Diamond;
         }
         else
         {
