@@ -417,6 +417,6 @@ void ACardGameState::OnRep_PlayerLastCardsChange()
 	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PC)
 	{
-		//PC->OnPlayerLastCardsChange(CurrentPlayerIndex,)
+		PC->OnPlayerLastCardsChange(PlayerLastCards);
 	}
 }

@@ -355,7 +355,7 @@ void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int
 	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex, LastPlayCardsPlayerIndexValue);
 }
 
-void ACardPlayerController::OnPlayerLastCardsChange(int32 PlayerIndex, const TArray<FCard>& Cards)
+void ACardPlayerController::OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards)
 {
 	if (!GameMenuWidget)
 	{
@@ -363,7 +363,7 @@ void ACardPlayerController::OnPlayerLastCardsChange(int32 PlayerIndex, const TAr
 		return;
 	}
 
-	GameMenuWidget->OnLastCardsChange(PlayerIndex, Cards);
+	GameMenuWidget->OnLastCardsChange(PlayerLastCards);
 }
 
 void ACardPlayerController::OnPlayerScoreChange(int32 Score)
