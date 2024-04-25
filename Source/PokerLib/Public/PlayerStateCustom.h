@@ -42,6 +42,8 @@ class POKERLIB_API APlayerStateCustom : public APlayerState
 	
 public:
     APlayerStateCustom();
+
+    void ResetPlayerStateData();
 protected:
     // 网络复制相关
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

@@ -92,18 +92,25 @@ void ACardGameMode::StartGame()
 {
 	if (!bGameStarted)
 	{
-		ReStartGame();
+		//ReStartGame();
+		bGameStarted = true;
+		FinshiPlayers.Empty();
+		InitializeCards(EDeckMode::RedTen);
+		DealCardsToPlayers();
+		AssignTeams();
+		ReSetGameScore();
 	}
 }
 
 void ACardGameMode::ReStartGame()
 {
-	bGameStarted = true;
-	FinshiPlayers.Empty();
-	InitializeCards(EDeckMode::RedTen);
-	DealCardsToPlayers();
-	AssignTeams();
-	ReSetGameScore();
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (CardGameState)
+	{
+		bGameStarted = false;
+		CardGameState->ResetCardGameStateData();
+		CardGameState->ChangeGamePhase(EGamePhase::WaitingForPlayers);
+	}
 }
 
 void ACardGameMode::InitializeCards(EDeckMode Mode)
@@ -200,7 +207,11 @@ bool ACardGameMode::CheckGameOver()
 
 			IsGameOver = true;
 		}
-		else if (TeamID_index_0 == TeamID_index_1)
+		else if (TeamID_index_0 == ETeamID::RedTen_Diamond && TeamID_index_1 == ETeamID::RedTen_Heart)
+		{
+			IsGameOver = true;
+		}
+		else if (TeamID_index_1 == ETeamID::RedTen_Diamond && TeamID_index_0 == ETeamID::RedTen_Heart)
 		{
 
 			IsGameOver = true;
@@ -301,4 +312,6 @@ void ACardGameMode::EndGame()
 			CardGameState->SetPlayerIndexGameOverType(FinshiPlayers[3], EGameOverType::Draw);
 		}
 	}
+
+	CardGameState->ChangeGamePhase(EGamePhase::GameOver);
 }

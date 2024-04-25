@@ -25,6 +25,9 @@ public:
 	void JoinGame(const FString& ServerAddress);
 
 	UFUNCTION(BlueprintCallable, Category = "Game|RedTen")
+	void ReStartGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Game|RedTen")
 	void ClientNotifyReady();
 
 	UFUNCTION(Client, Reliable)
@@ -84,6 +87,9 @@ public:
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetPlayerReady();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerReStartGame();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSelectCard(int32 CardId);

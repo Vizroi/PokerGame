@@ -11,14 +11,28 @@
 APlayerStateCustom::APlayerStateCustom()
 {
 	bReplicates = true;
+
     PlayerIndex = -1;
     PlayerCustomName = FString(TEXT("None"));
 
     bIsReady = false;
     HandCards.Empty();
     HandCardsCount = 0;
-    PlayerBetScore = 0;
     TeamID = ETeamID::InValid;
+    PlayerBetScore = 0;
+    IdentityStatus = EIdentityStatus::InValid;
+    bIsFinishHandCards = false;
+    GameOverType = EGameOverType::None;
+}
+
+void APlayerStateCustom::ResetPlayerStateData()
+{
+    bIsReady = false;
+    HandCards.Empty();
+    HandCardsCount = 0;
+    TeamID = ETeamID::InValid;
+    PlayerBetScore = 0;
+    IdentityStatus = EIdentityStatus::InValid;
     bIsFinishHandCards = false;
     GameOverType = EGameOverType::None;
 }

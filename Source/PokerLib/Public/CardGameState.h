@@ -32,6 +32,7 @@ public:
 	ACardGameState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void ResetCardGameStateData();
 
 	void ChangeGamePhase(EGamePhase NewGameState);
 

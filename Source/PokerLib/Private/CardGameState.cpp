@@ -9,6 +9,7 @@ ACardGameState::ACardGameState()
 {
 	bReplicates = true;
 
+	RevealedPlayers.Empty();
 	GameScore = 0;
 	CurrentGamePhase = EGamePhase::WaitingForPlayers;
 	CurrentPlayerIndex = -1;
@@ -29,6 +30,27 @@ void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACardGameState, LastPlayerIndex);
 	DOREPLIFETIME(ACardGameState, PlayerLastCards);
 	DOREPLIFETIME(ACardGameState, LastPlayCardsPlayerIndex);
+}
+
+void ACardGameState::ResetCardGameStateData()
+{
+	for (int32 i = 0; i < PlayerStateArray.Num(); i++)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			PlayerState->ResetPlayerStateData();
+		}
+	}
+
+
+	RevealedPlayers.Empty();
+	GameScore = 0;
+	CurrentGamePhase = EGamePhase::WaitingForPlayers;
+	CurrentPlayerIndex = -1;
+	LastPlayerIndex = -1;
+	LastPlayCardsPlayerIndex = -1;
+	PlayerLastCards.Empty();
 }
 
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
@@ -216,6 +238,25 @@ void ACardGameState::SetCurrentPlayerIndex(int32 Index)
 void ACardGameState::MoveToNextPlayer()
 {
 	if (!HasAuthority())
+	{
+		return;
+	}
+
+	bool IsEndGame = true;
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			if (!PlayerState->GetFinishHandCards())
+			{
+				IsEndGame = false;
+				break;
+			}
+		}
+	}
+
+	if (IsEndGame)
 	{
 		return;
 	}

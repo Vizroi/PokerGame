@@ -23,6 +23,14 @@ void ACardPlayerController::JoinGame(const FString& ServerAddress)
 	}
 }
 
+void ACardPlayerController::ReStartGame()
+{
+	if (IsLocalController())
+	{
+		ServerReStartGame();
+	}
+}
+
 void ACardPlayerController::ClientNotifyReady()
 {
 	if (IsLocalController())
@@ -449,6 +457,20 @@ void ACardPlayerController::ServerSetPlayerReady_Implementation()
 }
 
 bool ACardPlayerController::ServerSetPlayerReady_Validate()
+{
+	return true;
+}
+
+void ACardPlayerController::ServerReStartGame_Implementation()
+{
+	ACardGameMode* GameMode = Cast<ACardGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->ReStartGame();
+	}
+}
+
+bool ACardPlayerController::ServerReStartGame_Validate()
 {
 	return true;
 }
