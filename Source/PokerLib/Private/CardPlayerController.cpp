@@ -9,6 +9,8 @@
 
 ACardPlayerController::ACardPlayerController()
 {
+	bReplicates = true;
+
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableTouchEvents = true;
@@ -205,6 +207,26 @@ void ACardPlayerController::ClientUpdateSelectCardToHand_Implementation(int32 Ca
 	GameMenuWidget->OnSelectCard(CardId, IsSelected, IsCanPlay);
 }
 
+void ACardPlayerController::ClientUpdateLastPlayCards_Implementation(const TArray<FLastCardSet>& LastCardsSet, int32 CurPlayerIdx)
+{
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientUpdateLastPlayCards: GameState is NULL!"));
+		return;
+
+	}
+
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientUpdateLastPlayCards: PlayerState is NULL!"));
+		return;
+	}
+
+	OnPlayerLastCardsChange(LastCardsSet, CurPlayerIdx);
+}
+
 void ACardPlayerController::OnGamePhaseChange(EGamePhase CurGamePhase)
 {
 	if (!GameMenuWidget)
@@ -363,7 +385,7 @@ void ACardPlayerController::OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int
 	GameMenuWidget->OnCurrentPlayerIndexChange(CurPlayerIndex, LastPlayCardsPlayerIndexValue);
 }
 
-void ACardPlayerController::OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards)
+void ACardPlayerController::OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards, int32 CurPlayerIndex)
 {
 	if (!GameMenuWidget)
 	{
@@ -371,7 +393,7 @@ void ACardPlayerController::OnPlayerLastCardsChange(const TArray<FLastCardSet>& 
 		return;
 	}
 
-	GameMenuWidget->OnLastCardsChange(PlayerLastCards);
+	GameMenuWidget->OnLastCardsChange(PlayerLastCards, CurPlayerIndex);
 }
 
 void ACardPlayerController::OnPlayerScoreChange(int32 Score)
@@ -527,6 +549,8 @@ void ACardPlayerController::ServerPlayCards_Implementation()
 		PS->RemoveCardToHandFormCardId(CardsIdArray);
 
 		GS->MoveToNextPlayer();
+
+		GS->NotifyLastPlayCardSetChange();
 	}
 }
 
@@ -557,6 +581,8 @@ void ACardPlayerController::ServerPassTurn_Implementation()
 	PS->ClearSelectedCards();
 	//PS->PrintHandsCardsInfo("ServerPassTurn: ");
 	GS->MoveToNextPlayer();
+
+	GS->NotifyLastPlayCardSetChange();
 }
 
 bool ACardPlayerController::ServerPassTurn_Validate()

@@ -66,6 +66,22 @@ void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
 	}
 }
 
+void ACardGameState::NotifyLastPlayCardSetChange()
+{
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			ACardPlayerController* PC = Cast<ACardPlayerController>(PlayerState->GetPlayerController());
+			if(PC)
+			{
+				PC->ClientUpdateLastPlayCards(PlayerLastCards, CurrentPlayerIndex);
+			}
+		}
+	}
+}
+
 APlayerStateCustom* ACardGameState::GetPlayerStateByIndex(int32 index)
 {
 	//±éÀúÕû¸öPlayerStateArray
@@ -455,9 +471,9 @@ void ACardGameState::OnRep_CurrentPlayerIndexChange()
 
 void ACardGameState::OnRep_PlayerLastCardsChange()
 {
-	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (PC)
-	{
-		PC->OnPlayerLastCardsChange(PlayerLastCards);
-	}
+	//ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+	//if (PC)
+	//{
+	//	PC->OnPlayerLastCardsChange(PlayerLastCards);
+	//}
 }

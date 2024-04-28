@@ -63,7 +63,7 @@ public:
 		void OnSelectCard(int32 CardId, bool IsSelected, bool IsCanPlay);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
-		void OnLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards);
+		void OnLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards, int32 CurPlayerIndex);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnPlayerScoreChange(int32 PlayerScore);

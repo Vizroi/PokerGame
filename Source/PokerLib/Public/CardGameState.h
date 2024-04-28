@@ -36,6 +36,8 @@ public:
 
 	void ChangeGamePhase(EGamePhase NewGameState);
 
+	void NotifyLastPlayCardSetChange();
+
 public:
 	//get player custom satete by index
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
@@ -55,6 +57,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
 	void DealCardToPlayer(UDeck* CardDeck);
+
+	UFUNCTION(BlueprintCallable, Category = "CardGameState")
+	EGamePhase GetCurrentGamePhase() { return CurrentGamePhase; }
 
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
 	void AssignTeam();
@@ -104,6 +109,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	void AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards);
+
+	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
+	TArray<FLastCardSet> GetLastCardSet() {return PlayerLastCards; }
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	TArray<FCard> GetLastCardSetByPlayerIndex(int32 PlayerIndex);

@@ -67,6 +67,9 @@ public:
 	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
 	void ClientUpdateSelectCardToHand(int32 CardId, bool IsSelected, bool IsCanPlay);
 
+	//UFUNCTION(NetMulticast, Reliable, Category = "Game|Card Action")
+	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
+	void ClientUpdateLastPlayCards(const TArray<FLastCardSet>& LastCardsSet, int32 CurPlayerIdx);
 
 public:
 	void OnGamePhaseChange(EGamePhase CurGamePhase);
@@ -80,7 +83,7 @@ public:
 	void OnRevealAllIdentity(const TArray<FPlayerTeamInfo>& PlayerTeamInfoArr);
 	void OnPlayerIdentityUpdate(EIdentityStatus Status);
 	void OnCurrentPlayerIndexChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue);
-	void OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards);
+	void OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards, int32 CurPlayerIndex);
 	void OnPlayerScoreChange(int32 Score);
 	void OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type);
 
