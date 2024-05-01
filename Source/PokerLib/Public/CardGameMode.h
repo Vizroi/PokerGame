@@ -3,16 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Card.h"
 #include "Deck.h"
-#include "CardPlayerController.h"
-#include "PlayerStateCustom.h"
+#include "PlayerTeamInfo.h"
 #include "GameFramework/GameModeBase.h"
 #include "CardGameMode.generated.h"
-
-/**
- * 
- */
 
 UCLASS()
 class POKERLIB_API ACardGameMode : public AGameModeBase
@@ -36,10 +30,13 @@ public:
     void AssignTeams();
     void ReSetGameScore();
 
-    //ºÏ≤‚ «∑Ò”Œœ∑Ω· ¯
+    //check game is over
     void OnPlayerFinishPlayCards(int32 PlayerIndex);
     bool CheckGameOver();
     void EndGame();
+
+    //ward or grab wind 
+    void CheckWardOrGrabWind();
 
 protected:
     UPROPERTY()

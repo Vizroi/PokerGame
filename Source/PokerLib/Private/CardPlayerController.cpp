@@ -2,10 +2,9 @@
 
 
 #include "CardPlayerController.h"
-#include "PlayerStateCustom.h"
-#include "CardGameMode.h"
 #include "RedTenCardFunctionLibrary.h"
-#include <CardGameState.h>
+
+
 
 ACardPlayerController::ACardPlayerController()
 {
@@ -227,6 +226,28 @@ void ACardPlayerController::ClientUpdateLastPlayCards_Implementation(const TArra
 	OnPlayerLastCardsChange(LastCardsSet, CurPlayerIdx);
 }
 
+void ACardPlayerController::ClientUpdateCurAskWindPlayerIndex_Implementation(int32 CurAskWindPlayerIdx)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientUpdateCurAskWindPlayerIndex: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnCurAskWindPlayerIndexChange(CurAskWindPlayerIdx);
+}
+
+void ACardPlayerController::ClientWindActionResult_Implementation(int32 CurPlayerIdx, EWindResultType WindRsultType)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ClientWindActionResult: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnWindActionResult(CurPlayerIdx, WindRsultType);
+}
+
 void ACardPlayerController::OnGamePhaseChange(EGamePhase CurGamePhase)
 {
 	if (!GameMenuWidget)
@@ -418,6 +439,17 @@ void ACardPlayerController::OnPlayerGameOverChange(int32 PlayerIndex, EGameOverT
 	GameMenuWidget->OnPlayerGameOverChange(PlayerIndex, Type);
 }
 
+void ACardPlayerController::OnCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx)
+{
+	if (!GameMenuWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::OnCurAskWindPlayerIndexChange: GameMenuWidget is NULL!"));
+		return;
+	}
+
+	GameMenuWidget->OnCurAskWindPlayerIndexChange(CurAskWindPlayerIdx);
+}
+
 void ACardPlayerController::ServerRevealAllIdentiy_Implementation(bool IsReveal)
 {
 	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
@@ -586,6 +618,28 @@ void ACardPlayerController::ServerPassTurn_Implementation()
 }
 
 bool ACardPlayerController::ServerPassTurn_Validate()
+{
+	return true;
+}
+
+void ACardPlayerController::ServerWindAction_Implementation(EWindType WindType)
+{
+	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
+	if (!GS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPassTurn: GameState is NULL!"));
+		return;
+
+	}
+
+	FWindActionInfo WindActionInfo;
+	GS->AddWindActionInfo(WindActionInfo);
+
+
+
+}
+
+bool ACardPlayerController::ServerWindAction_Validate(EWindType WindType)
 {
 	return true;
 }

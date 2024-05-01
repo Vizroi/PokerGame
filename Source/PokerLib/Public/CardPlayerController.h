@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UIGameMainBase.h"
-#include "CardSet.cpp"
 #include "GameFramework/PlayerController.h"
 #include "CardPlayerController.generated.h"
 
-/**
- * 
- */
-
+class ACardGameState;
+class ACardGameMode;
 
 UCLASS()
 class POKERLIB_API ACardPlayerController : public APlayerController
@@ -67,9 +64,14 @@ public:
 	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
 	void ClientUpdateSelectCardToHand(int32 CardId, bool IsSelected, bool IsCanPlay);
 
-	//UFUNCTION(NetMulticast, Reliable, Category = "Game|Card Action")
 	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
 	void ClientUpdateLastPlayCards(const TArray<FLastCardSet>& LastCardsSet, int32 CurPlayerIdx);
+
+	UFUNCTION(Client, Reliable, Category = "Game|Wind Action")
+	void ClientUpdateCurAskWindPlayerIndex(int32 CurAskWindPlayerIdx);
+
+	UFUNCTION(Client, Reliable, Category = "Game|Wind Action")
+	void ClientWindActionResult(int32 CurPlayerIdx, EWindResultType WindRsultType);
 
 public:
 	void OnGamePhaseChange(EGamePhase CurGamePhase);
@@ -86,6 +88,7 @@ public:
 	void OnPlayerLastCardsChange(const TArray<FLastCardSet>& PlayerLastCards, int32 CurPlayerIndex);
 	void OnPlayerScoreChange(int32 Score);
 	void OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type);
+	void OnCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx);
 
 protected:
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -105,6 +108,9 @@ protected:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRevealAllIdentiy(bool IsReveal);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerWindAction(EWindType WindType);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI_GamePlayMenu")

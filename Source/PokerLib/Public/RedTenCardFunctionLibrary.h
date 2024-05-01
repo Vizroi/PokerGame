@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Card.h"
-#include "CardSet.h"
 #include "CardFunctionLibrary.h"
 #include "RedTenCardFunctionLibrary.generated.h"
 

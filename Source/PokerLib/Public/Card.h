@@ -38,45 +38,9 @@ enum class ECardValue : uint8
 	JokerB = 100 UMETA(DisplayName = "JokerB")
 };
 
-FString GetCardValueString(ECardValue Value)
-{
-	switch (Value)
-	{
-	case ECardValue::Ace:
-		return "A";
-	case ECardValue::J:
-		return "J";
-	case ECardValue::Q:
-		return "Q";
-	case ECardValue::K:
-		return "K";
-	case ECardValue::JokerA:
-		return "JokerA";
-	case ECardValue::JokerB:
-		return "JokerB";
-	default:
-		return FString::FromInt(static_cast<int32>(Value));
-	}
-}
+extern FString GetCardValueString(ECardValue Value);
 
-FString GetCardSuitString(ESuit Suit)
-{
-	//switch (Suit)
-	//{
-	//	case ESuit::Spade:
-	//		return "黑桃";
-	//	case ESuit::Heart:
-	//		return "红桃";
-	//	case ESuit::Club:
-	//		return "梅花";
-	//	case ESuit::Diamond:
-	//		return "方片";
-	//	case ESuit::Joker:
-	//		return "鬼牌";
-	//}
-
-	return UEnum::GetValueAsString(Suit);
-}
+extern FString GetCardSuitString(ESuit Suit);
 
 USTRUCT(BlueprintType)
 struct FCardDataTable : public FTableRowBase

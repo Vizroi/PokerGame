@@ -2,7 +2,6 @@
 
 
 #include "IDeckInitializationStrategy.h"
-#include "RedTenCardFunctionLibrary.h"
 
 void StandardDeckInitializationStrategy::InitializeDeck(TArray<FCard>& Cards)
 {

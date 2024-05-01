@@ -3,7 +3,8 @@
 
 #include "CardGameState.h"
 #include <Net/UnrealNetwork.h>
-#include "CardPlayerController.h"
+
+class ACardPlayerController;
 
 ACardGameState::ACardGameState()
 {
@@ -16,6 +17,8 @@ ACardGameState::ACardGameState()
 	LastPlayerIndex = -1;
 	LastPlayCardsPlayerIndex = -1;
 	PlayerLastCards.Empty();
+	CurrentAskWindPlayerIndex = -1;
+	IsGameEnd = false;
 }
 
 void ACardGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -51,6 +54,8 @@ void ACardGameState::ResetCardGameStateData()
 	LastPlayerIndex = -1;
 	LastPlayCardsPlayerIndex = -1;
 	PlayerLastCards.Empty();
+	CurrentAskWindPlayerIndex = -1;
+	IsGameEnd = false;
 }
 
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
@@ -77,6 +82,22 @@ void ACardGameState::NotifyLastPlayCardSetChange()
 			if(PC)
 			{
 				PC->ClientUpdateLastPlayCards(PlayerLastCards, CurrentPlayerIndex);
+			}
+		}
+	}
+}
+
+void ACardGameState::NotifyCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx)
+{
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			ACardPlayerController* PC = Cast<ACardPlayerController>(PlayerState->GetPlayerController());
+			if (PC)
+			{
+				PC->ClientUpdateCurAskWindPlayerIndex(CurrentAskWindPlayerIndex);
 			}
 		}
 	}
@@ -147,6 +168,19 @@ void ACardGameState::DealCardToPlayer(UDeck* CardDeck)
 				PlayerState->SortHandCards();
 			}
 		}
+	}
+}
+
+void ACardGameState::SetGameEnd(bool IsEnd)
+{
+	if(!HasAuthority())
+	{
+		return;
+	}
+
+	if (IsGameEnd != IsEnd)
+	{
+		IsGameEnd = IsEnd;
 	}
 }
 
@@ -225,7 +259,8 @@ void ACardGameState::ResetGameScore()
 		return;
 	}
 
-	GameScore = DefaultGameScore;
+	//GameScore = DefaultGameScore;
+	GameScore = 10;
 }
 
 void ACardGameState::AddGameScore(int32 Score)
@@ -251,35 +286,10 @@ void ACardGameState::SetCurrentPlayerIndex(int32 Index)
 	}
 }
 
-void ACardGameState::MoveToNextPlayer()
+int32 ACardGameState::GetNextCanPlayCardsPlayer(int32 CurPlayerIdx)
 {
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	bool IsEndGame = true;
-	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
-	{
-		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
-		if (PlayerState)
-		{
-			if (!PlayerState->GetFinishHandCards())
-			{
-				IsEndGame = false;
-				break;
-			}
-		}
-	}
-
-	if (IsEndGame)
-	{
-		return;
-	}
-
-	LastPlayerIndex = CurrentPlayerIndex;
-
-	if (CurrentPlayerIndex < 0)
+	int32 NextPlayerIdx = CurPlayerIdx;
+	if (NextPlayerIdx < 0)
 	{
 		for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
 		{
@@ -289,16 +299,25 @@ void ACardGameState::MoveToNextPlayer()
 				bool HasHeartSix = PlayerState->HasCard(ESuit::Heart, ECardValue::Six);
 				if (HasHeartSix)
 				{
-					CurrentPlayerIndex = PlayerState->GetPlayerIndex();
+					NextPlayerIdx = PlayerState->GetPlayerIndex();
 				}
 			}
 		}
 	}
 	else
 	{
-		int32 EndInex = CurrentPlayerIndex + 1;
+		int32 ProtectCount = 99;
+
+		int32 EndInex = NextPlayerIdx + 1;
 		do
 		{
+			if(ProtectCount-- <= 0)
+			{
+				UE_LOG(LogTemp, Error, TEXT("Server :  GetNextCanPlayCardsPlayer is bad!!! "));
+				break;
+			}
+
+
 			if (EndInex >= PlayerStateArray.Num())
 			{
 				EndInex = 0;
@@ -322,11 +341,29 @@ void ACardGameState::MoveToNextPlayer()
 				break;
 			}
 
-		} while (EndInex != CurrentPlayerIndex);
+		} while (EndInex != NextPlayerIdx);
 
-		CurrentPlayerIndex = EndInex;
+		NextPlayerIdx = EndInex;
 	}
 
+	return NextPlayerIdx;
+}
+
+void ACardGameState::MoveToNextPlayer()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (GetGameEnd())
+	{
+		return;
+	}
+
+	LastPlayerIndex = CurrentPlayerIndex;
+
+	CurrentPlayerIndex = GetNextCanPlayCardsPlayer(CurrentPlayerIndex);
 
 	UE_LOG(LogTemp, Warning, TEXT("Server :               CurrentPlayerIndex: %d"), CurrentPlayerIndex);
 	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
@@ -366,6 +403,30 @@ ETeamID ACardGameState::GetPlayerIndexTeamID(int32 InPlayerIndex)
 		ID = PlayerState->GetTeamID();
 	}
 	return ID;
+}
+
+int32 ACardGameState::GetLeftPlayerCount()
+{
+	int32 LeftPlayerCounts = PlayerStateArray.Num();
+	LeftPlayerCounts -= GetFinishPlayerCount();
+	return LeftPlayerCounts;
+}
+
+int32 ACardGameState::GetFinishPlayerCount()
+{
+	int32 FinishPlayerCount = 0;
+	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
+	{
+		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
+		if (PlayerState)
+		{
+			if (PlayerState->GetFinishHandCards())
+			{
+				FinishPlayerCount++;
+			}
+		}
+	}
+	return FinishPlayerCount;
 }
 
 void ACardGameState::AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards)
@@ -419,6 +480,123 @@ TArray<FCard> ACardGameState::GetLastCardSetByPlayerIndex(int32 PlayerIndex)
 	return CardsArr;
 }
 
+int32 ACardGameState::GetNextAskWindPlayerIdx(int32 CurPlayerIdx)
+{
+	int32 NextAskWindPlayerIdx = -1;
+	if (CurPlayerIdx < 0)
+	{
+		CurPlayerIdx = CurrentPlayerIndex;
+	}
+	else
+	{
+		NextAskWindPlayerIdx = GetNextCanPlayCardsPlayer(CurrentPlayerIndex);
+	}
+
+	return NextAskWindPlayerIdx;
+}
+
+
+void ACardGameState::AskNextPlayerGrabWind()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	CurrentAskWindPlayerIndex = GetNextAskWindPlayerIdx(CurrentAskWindPlayerIndex);
+
+	NotifyCurAskWindPlayerIndexChange(CurrentAskWindPlayerIndex);
+}
+
+void ACardGameState::UpdateWindActionInfo(FWindActionInfo WindActionInfo)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (WindActionInfoArray.IsEmpty())
+	{
+		HandleFirstPlayerWindAction(WindActionInfo);
+	}
+	else
+	{
+		HandleSubsequentPlayerWindAction(WindActionInfo);
+	}
+}
+
+void ACardGameState::AddWindActionInfo(FWindActionInfo WindActionInfo)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	for (int32 i = 0; i < WindActionInfoArray.Num(); ++i)
+	{
+		if (WindActionInfoArray[i].PlayerIdx == WindActionInfo.PlayerIdx)
+		{
+			WindActionInfoArray[i] = WindActionInfo;
+			return;
+		}
+	}
+	WindActionInfoArray.Add(WindActionInfo);
+}
+
+void ACardGameState::HandleFirstPlayerWindAction(FWindActionInfo WindActionInfo)
+{
+	if (WindActionInfo.WindType == EWindType::EWT_GrabWind)
+	{
+		APlayerStateCustom* PS = GetPlayerStateByIndex(WindActionInfo.PlayerIdx);
+		if (PS)
+		{
+			ACardPlayerController* APC = Cast<ACardPlayerController>(PS->GetPlayerController());
+			if (APC)
+			{
+				APC->ClientWindActionResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
+			}
+		}
+	}
+	else
+	{
+		AddWindActionInfo(WindActionInfo);
+		AskNextPlayerGrabWind();
+	}
+}
+
+void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindActionInfo)
+{
+	APlayerStateCustom* FirstPS = GetPlayerStateByIndex(WindActionInfoArray[0].PlayerIdx);
+	if (FirstPS)
+	{
+
+		if (WindActionInfo.WindType == EWindType::EWT_WardWind)
+		{
+			if (WindActionInfoArray.Num() == GetLeftPlayerCount())
+			{
+				ACardPlayerController* APC = Cast<ACardPlayerController>(FirstPS->GetPlayerController());
+				if (APC)
+				{
+					APC->ClientWindActionResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_WardWindSuccess);
+				}
+			}
+			else
+			{
+				AddWindActionInfo(WindActionInfo);
+				AskNextPlayerGrabWind();
+			}
+		}
+		else if (WindActionInfo.WindType == EWindType::EWT_GrabWind)
+		{
+			ACardPlayerController* APC = Cast<ACardPlayerController>(FirstPS->GetPlayerController());
+			if (APC)
+			{
+				APC->ClientWindActionResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_WardWindFail);
+			}
+		}
+	}
+}
+
 void ACardGameState::OnRep_GamePhaseChange()
 {
 	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
@@ -469,11 +647,20 @@ void ACardGameState::OnRep_CurrentPlayerIndexChange()
 	}
 }
 
-void ACardGameState::OnRep_PlayerLastCardsChange()
-{
-	//ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
-	//if (PC)
-	//{
-	//	PC->OnPlayerLastCardsChange(PlayerLastCards);
-	//}
-}
+//void ACardGameState::OnRep_PlayerLastCardsChange()
+//{
+//	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+//	if (PC)
+//	{
+//		PC->OnPlayerLastCardsChange(PlayerLastCards);
+//	}
+//}
+
+//void ACardGameState::OnRep_CuirAskWindPlayerIndexChange()
+//{
+//	ACardPlayerController* PC = Cast<ACardPlayerController>(GetWorld()->GetFirstPlayerController());
+//	if (PC)
+//	{
+//		PC->OnCurAskWindPlayerIndexChange(CurrentAskWindPlayerIndex);
+//	}
+//}

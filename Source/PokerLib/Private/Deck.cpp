@@ -2,6 +2,7 @@
 
 
 #include "Deck.h"
+#include "IDeckInitializationStrategy.h"
 
 UDeck::UDeck()
 {

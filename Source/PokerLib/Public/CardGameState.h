@@ -3,25 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
-#include "Deck.h"
-#include "PlayerStateCustom.h"
 #include "PlayerTeamInfo.h"
+#include "GrabWind.h"
+#include "Deck.h"
+#include "GameFramework/GameStateBase.h"
 #include "CardGameState.generated.h"
 
-int32 DefaultGameScore = 10;
+static int32 DefaultGameScore = 10;
 
-UENUM(BlueprintType)
-enum class EGamePhase : uint8
-{
-	WaitingForPlayers,
-	DealingCards,
-	AssigningTeams,
-	RevealingTeams,
-	Playing,
-	GameOver
-};
-
+class APlayerStateCustom;
 
 UCLASS()
 class POKERLIB_API ACardGameState : public AGameStateBase
@@ -36,8 +26,9 @@ public:
 
 	void ChangeGamePhase(EGamePhase NewGameState);
 
+public:
 	void NotifyLastPlayCardSetChange();
-
+	void NotifyCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx);
 public:
 	//get player custom satete by index
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
@@ -60,6 +51,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
 	EGamePhase GetCurrentGamePhase() { return CurrentGamePhase; }
+
+	UFUNCTION(BlueprintCallable, Category = "CardGameState")
+	void SetGameEnd(bool IsEnd);
+
+	UFUNCTION(BlueprintCallable, Category = "CardGameState")
+	bool GetGameEnd() const { return IsGameEnd; }
 
 	UFUNCTION(BlueprintCallable, Category = "Team Action")
 	void AssignTeam();
@@ -96,6 +93,9 @@ public:
 	int32 GetLastPlayCardsPlayerIndex() { return LastPlayCardsPlayerIndex; }
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetNextCanPlayCardsPlayer(int32 CurPlayerIdx);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void MoveToNextPlayer();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
@@ -107,6 +107,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	ETeamID GetPlayerIndexTeamID(int32 InPlayerIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetLeftPlayerCount();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	int32 GetFinishPlayerCount();
+
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	void AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards);
 
@@ -115,6 +121,25 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	TArray<FCard> GetLastCardSetByPlayerIndex(int32 PlayerIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	int32 GetNextAskWindPlayerIdx(int32 CurPlayerIdx);
+
+	//询问下一个是否抢风的玩家
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	void AskNextPlayerGrabWind();
+
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	void UpdateWindActionInfo(FWindActionInfo WindActionInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	void AddWindActionInfo(FWindActionInfo WindActionInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	void HandleFirstPlayerWindAction(FWindActionInfo WindActionInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
+	void HandleSubsequentPlayerWindAction(FWindActionInfo WindActionInfo);
 
 public:
 	//通过位运算的变量来知道当前哪个位置是空的
@@ -137,8 +162,11 @@ public:
 	UFUNCTION()
 	void OnRep_CurrentPlayerIndexChange();
 
-	UFUNCTION()
-	void OnRep_PlayerLastCardsChange();
+	//UFUNCTION()
+	//void OnRep_PlayerLastCardsChange();
+
+	//UFUNCTION()
+	//void OnRep_CuirAskWindPlayerIndexChange();
 	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerStateArrayChange)
@@ -162,6 +190,15 @@ protected:
 	UPROPERTY(Replicated)
 	int32 LastPlayCardsPlayerIndex = -1;
 
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerLastCardsChange)
+	UPROPERTY(Replicated)
 	TArray<FLastCardSet> PlayerLastCards;
+
+	UPROPERTY(Replicated)
+	int32 CurrentAskWindPlayerIndex = -1;
+
+	UPROPERTY(Replicated)
+	TArray<FWindActionInfo> WindActionInfoArray;
+
+	UPROPERTY(Replicated)
+	bool IsGameEnd = false;
 };

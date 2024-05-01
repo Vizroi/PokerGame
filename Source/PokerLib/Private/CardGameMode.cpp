@@ -2,8 +2,9 @@
 
 
 #include "CardGameMode.h"
-#include "PlayerStateCustom.h"
 #include "CardGameState.h"
+#include "PlayerStateCustom.h"
+#include "CardPlayerController.h"
 
 ACardGameMode::ACardGameMode()
 {
@@ -313,5 +314,18 @@ void ACardGameMode::EndGame()
 		}
 	}
 
+	CardGameState->SetGameEnd(true);
 	CardGameState->ChangeGamePhase(EGamePhase::GameOver);
+}
+
+void ACardGameMode::CheckWardOrGrabWind()
+{
+	ACardGameState* CardGameState = GetGameState<ACardGameState>();
+	if (!CardGameState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No CardGameState found"));
+		return;
+	}
+
+	TArray<APlayerStateCustom*> PlayerStatesArray = CardGameState->GetPlayerStateArr();
 }

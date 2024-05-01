@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PlayerStateCustom.h"
 #include "UIGameMainBase.generated.h"
 
 /**
  * 游戏游玩主要界面
  */
+
+class APlayerStateCustom;
+
 UCLASS()
 class POKERLIB_API UUIGameMainBase : public UUserWidget
 {
@@ -70,4 +72,10 @@ public:
 		
 	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
 		void OnPlayerGameOverChange(int32 PlayerIndex, EGameOverType Type);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx);
+		
+	UFUNCTION(BlueprintImplementableEvent, Category = "UIGameMainBase")
+		void OnWindActionResult(int32 CurPlayerIdx, EWindResultType WindRsultType);
 };

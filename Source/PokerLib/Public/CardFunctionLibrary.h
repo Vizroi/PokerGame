@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Card.h"
-#include "CardSet.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "CardFunctionLibrary.generated.h"
 
