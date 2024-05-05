@@ -28,7 +28,9 @@ public:
 
 public:
 	void NotifyLastPlayCardSetChange();
+	void NotifyCurrentPlayerIndexChange();
 	void NotifyCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx);
+	void NotifyWindResult(int32 PlayerIdx, EWindResultType Type);
 public:
 	//get player custom satete by index
 	UFUNCTION(BlueprintCallable, Category = "CardGameState")
@@ -117,10 +119,13 @@ public:
 	void AddLastCardSet(int32 PlayerIndex, TArray<FCard> LastCards);
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
-	TArray<FLastCardSet> GetLastCardSet() {return PlayerLastCards; }
+	TArray<FLastCardSet>& GetLastCardSet() {return PlayerLastCards; }
 
 	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
 	TArray<FCard> GetLastCardSetByPlayerIndex(int32 PlayerIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Last Cards Set")
+	void EmptyLastCardSetByLastPlayCards();
 
 	UFUNCTION(BlueprintCallable, Category = "Grab Wind Info")
 	int32 GetNextAskWindPlayerIdx(int32 CurPlayerIdx);
@@ -159,8 +164,8 @@ public:
 	UFUNCTION()
 	void OnRep_GameScoreChange();
 
-	UFUNCTION()
-	void OnRep_CurrentPlayerIndexChange();
+	//UFUNCTION()
+	//void OnRep_CurrentPlayerIndexChange();
 
 	//UFUNCTION()
 	//void OnRep_PlayerLastCardsChange();
@@ -181,7 +186,7 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_GamePhaseChange)
 	EGamePhase  CurrentGamePhase = EGamePhase::WaitingForPlayers;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentPlayerIndexChange)
+	UPROPERTY(Replicated)
 	int32 CurrentPlayerIndex; // Current can play cards index
 
 	UPROPERTY(Replicated)

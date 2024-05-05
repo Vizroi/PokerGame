@@ -60,7 +60,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game|Score Action")
 	void ClientRevealAllIdentiy(bool IsReveal);
 
+	UFUNCTION(BlueprintCallable, Category = "Game|Wind Action")
+	void ClientWindAction(EWindType WindType);
+
 public:
+	UFUNCTION(Client, Reliable, Category = "Game|Player Action")
+	void ClientUpdateCurPlayerIdxChange(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue);
+
 	UFUNCTION(Client, Reliable, Category = "Game|Card Action")
 	void ClientUpdateSelectCardToHand(int32 CardId, bool IsSelected, bool IsCanPlay);
 

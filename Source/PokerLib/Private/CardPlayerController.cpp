@@ -3,7 +3,8 @@
 
 #include "CardPlayerController.h"
 #include "RedTenCardFunctionLibrary.h"
-
+#include "CardGameState.h"
+#include "PlayerStateCustom.h"
 
 
 ACardPlayerController::ACardPlayerController()
@@ -193,6 +194,16 @@ void ACardPlayerController::ClientPassTurn()
 void ACardPlayerController::ClientRevealAllIdentiy(bool IsReveal)
 {
 	ServerRevealAllIdentiy(IsReveal);
+}
+
+void ACardPlayerController::ClientWindAction(EWindType WindType)
+{
+	ServerWindAction(WindType);
+}
+
+void ACardPlayerController::ClientUpdateCurPlayerIdxChange_Implementation(int32 CurPlayerIndex, int32 LastPlayCardsPlayerIndexValue)
+{
+	OnCurrentPlayerIndexChange(CurPlayerIndex, LastPlayCardsPlayerIndexValue);
 }
 
 void ACardPlayerController::ClientUpdateSelectCardToHand_Implementation(int32 CardId, bool IsSelected, bool IsCanPlay)
@@ -577,10 +588,16 @@ void ACardPlayerController::ServerPlayCards_Implementation()
 		PS->PrintPlayCardsInfo("ServerPlayCards:  ",LastCards);
 		//PS->PrintHandsCardsInfo("ServerPlayCards: ");
 
+		int32 LastFinishPlayerNum = GS->GetFinishPlayerCount();
 
 		PS->RemoveCardToHandFormCardId(CardsIdArray);
 
 		GS->MoveToNextPlayer();
+
+		if(LastFinishPlayerNum != GS->GetFinishPlayerCount())
+		{
+			GS->AskNextPlayerGrabWind();
+		}
 
 		GS->NotifyLastPlayCardSetChange();
 	}
@@ -627,16 +644,22 @@ void ACardPlayerController::ServerWindAction_Implementation(EWindType WindType)
 	ACardGameState* GS = Cast<ACardGameState>(GetWorld()->GetGameState());
 	if (!GS)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerPassTurn: GameState is NULL!"));
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerWindAction: GameState is NULL!"));
 		return;
 
 	}
 
+	APlayerStateCustom* PS = Cast<APlayerStateCustom>(PlayerState);
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACardPlayerController::ServerWindAction: PlayerState is NULL!"));
+		return;
+	}
+
 	FWindActionInfo WindActionInfo;
-	GS->AddWindActionInfo(WindActionInfo);
-
-
-
+	WindActionInfo.WindType = WindType;
+	WindActionInfo.PlayerIdx = PS->GetPlayerIndex();
+	GS->UpdateWindActionInfo(WindActionInfo);
 }
 
 bool ACardPlayerController::ServerWindAction_Validate(EWindType WindType)

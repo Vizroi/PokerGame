@@ -3,10 +3,11 @@
 
 #include "PlayerStateCustom.h"
 #include "Net/UnrealNetwork.h"
+#include "PlayerTeamInfo.h"
+#include "RedTenCardFunctionLibrary.h"
+#include "CardPlayerController.h"
+#include "CardGameMode.h"
 #include <Kismet/GameplayStatics.h>
-
-class ACardGameMode;
-class ACardPlayerController;
 
 APlayerStateCustom::APlayerStateCustom()
 {
