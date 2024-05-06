@@ -672,7 +672,15 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			ACardPlayerController* APC = Cast<ACardPlayerController>(FirstPS->GetPlayerController());
 			if (APC)
 			{
-				NotifyWindResult(WindActionInfoArray[0].PlayerIdx, EWindResultType::EWRT_WardWindFail);
+				if (WindActionInfo.PlayerIdx == WindActionInfoArray[0].PlayerIdx)
+				{
+					ResetWindActionData();
+					NotifyWindResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
+				}
+				else
+				{
+					NotifyWindResult(WindActionInfoArray[0].PlayerIdx, EWindResultType::EWRT_WardWindFail);
+				}
 			}
 		}
 		else if (WindActionInfo.WindType == EWindType::EWT_GiveUpWind)

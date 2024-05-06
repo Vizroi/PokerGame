@@ -594,7 +594,7 @@ void ACardPlayerController::ServerPlayCards_Implementation()
 
 		GS->MoveToNextPlayer();
 
-		if(LastFinishPlayerNum != GS->GetFinishPlayerCount())
+		if(!GS->GetGameEnd() && LastFinishPlayerNum != GS->GetFinishPlayerCount())
 		{
 			GS->AskNextPlayerGrabWind();
 		}
