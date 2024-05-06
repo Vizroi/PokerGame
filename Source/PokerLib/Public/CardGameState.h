@@ -24,6 +24,8 @@ public:
 
 	void ResetCardGameStateData();
 
+	void ResetWindActionData();
+
 	void ChangeGamePhase(EGamePhase NewGameState);
 
 public:
@@ -99,6 +101,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void MoveToNextPlayer();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Info")
+	void MoveToPlayer(int32 PlayerIdx);
 
 	UFUNCTION(BlueprintCallable, Category = "Player Info")
 	void SetPlayerIndexGameOverType(int32 InPlayerIndex, EGameOverType Type);

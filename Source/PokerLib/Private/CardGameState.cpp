@@ -61,6 +61,12 @@ void ACardGameState::ResetCardGameStateData()
 	IsGameEnd = false;
 }
 
+void ACardGameState::ResetWindActionData()
+{
+	WindActionInfoArray.Empty();
+	CurrentAskWindPlayerIndex = -1;
+}
+
 void ACardGameState::ChangeGamePhase(EGamePhase NewGamePhase)
 {
 	if (!HasAuthority())
@@ -124,9 +130,6 @@ void ACardGameState::NotifyCurAskWindPlayerIndexChange(int32 CurAskWindPlayerIdx
 
 void ACardGameState::NotifyWindResult(int32 PlayerIdx, EWindResultType Type)
 {
-	WindActionInfoArray.Empty();
-	CurrentAskWindPlayerIndex = -1;
-
 	for (int32 i = 0; i < PlayerStateArray.Num(); ++i)
 	{
 		APlayerStateCustom* PlayerState = Cast<APlayerStateCustom>(PlayerStateArray[i]);
@@ -135,7 +138,7 @@ void ACardGameState::NotifyWindResult(int32 PlayerIdx, EWindResultType Type)
 			ACardPlayerController* PC = Cast<ACardPlayerController>(PlayerState->GetPlayerController());
 			if (PC)
 			{
-				NotifyCurAskWindPlayerIndexChange(CurrentAskWindPlayerIndex);
+				//NotifyCurAskWindPlayerIndexChange(CurrentAskWindPlayerIndex);
 				PC->ClientWindActionResult(PlayerIdx, Type);
 			}
 		}
@@ -410,6 +413,27 @@ void ACardGameState::MoveToNextPlayer()
 	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
 }
 
+void ACardGameState::MoveToPlayer(int32 PlayerIdx)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (GetGameEnd())
+	{
+		return;
+	}
+
+	LastPlayerIndex = CurrentPlayerIndex;
+	CurrentPlayerIndex = PlayerIdx;
+
+	NotifyCurrentPlayerIndexChange();
+
+	UE_LOG(LogTemp, Warning, TEXT("Server :               CurrentPlayerIndex: %d"), CurrentPlayerIndex);
+	UE_LOG(LogTemp, Warning, TEXT("Server :               LastPlayerIndex: %d"), LastPlayerIndex);
+}
+
 void ACardGameState::SetPlayerIndexGameOverType(int32 InPlayerIndex, EGameOverType Type)
 {
 	if (!HasAuthority())
@@ -612,6 +636,7 @@ void ACardGameState::HandleFirstPlayerWindAction(FWindActionInfo WindActionInfo)
 			ACardPlayerController* APC = Cast<ACardPlayerController>(PS->GetPlayerController());
 			if (APC)
 			{
+				ResetWindActionData();
 				NotifyWindResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
 			}
 		}
@@ -634,6 +659,7 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			if (WindActionInfoArray.Num() == GetLeftPlayerCount())
 			{
 				EmptyLastCardSetByLastPlayCards();
+				ResetWindActionData();
 				NotifyWindResult(WindActionInfoArray[0].PlayerIdx, EWindResultType::EWRT_WardWindSuccess);
 			}
 			else
@@ -655,7 +681,9 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			{
 				if (Elem.WindType == EWindType::EWT_GrabWind)
 				{
+					ResetWindActionData();
 					NotifyWindResult(Elem.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
+					MoveToPlayer(Elem.PlayerIdx);
 					break;
 				}
 			}
