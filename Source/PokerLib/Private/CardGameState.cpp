@@ -636,8 +636,8 @@ void ACardGameState::HandleFirstPlayerWindAction(FWindActionInfo WindActionInfo)
 			ACardPlayerController* APC = Cast<ACardPlayerController>(PS->GetPlayerController());
 			if (APC)
 			{
-				ResetWindActionData();
 				NotifyWindResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
+				ResetWindActionData();
 			}
 		}
 	}
@@ -659,8 +659,8 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			if (WindActionInfoArray.Num() == GetLeftPlayerCount())
 			{
 				EmptyLastCardSetByLastPlayCards();
-				ResetWindActionData();
 				NotifyWindResult(WindActionInfoArray[0].PlayerIdx, EWindResultType::EWRT_WardWindSuccess);
+				ResetWindActionData();
 			}
 			else
 			{
@@ -674,8 +674,8 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			{
 				if (WindActionInfo.PlayerIdx == WindActionInfoArray[0].PlayerIdx)
 				{
-					ResetWindActionData();
 					NotifyWindResult(WindActionInfo.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
+					ResetWindActionData();
 				}
 				else
 				{
@@ -689,9 +689,9 @@ void ACardGameState::HandleSubsequentPlayerWindAction(FWindActionInfo WindAction
 			{
 				if (Elem.WindType == EWindType::EWT_GrabWind)
 				{
-					ResetWindActionData();
 					NotifyWindResult(Elem.PlayerIdx, EWindResultType::EWRT_GrabWindSuccess);
 					MoveToPlayer(Elem.PlayerIdx);
+					ResetWindActionData();
 					break;
 				}
 			}
